@@ -306,7 +306,7 @@ registerForm.addEventListener('submit', (e) => {
         return;
     }
 
-    if (regPin.length !== 6 || !/^\\d{6}$/.test(regPin)) {
+    if (regPin.length !== 6 || !/^\d{6}$/.test(regPin)) {
         registerError.innerText = 'PIN harus terdiri dari 6 angka!';
         registerError.classList.remove('hidden');
         showToast('PIN harus terdiri dari 6 angka!', 'error', 3000);
