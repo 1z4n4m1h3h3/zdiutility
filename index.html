@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZDI STOCK UTILITY - 3D Stock Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link class="cache-bust" rel="stylesheet" href="css/style.css?v=6">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export/Import -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- Html5-Qrcode for Barcode Scanner -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- JsBarcode for Barcode Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="Logo.png/Logo.png">
+
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('PWA Service Worker Berhasil Didaftar!', reg.scope))
+                    .catch(err => console.log('PWA Service Worker Gagal:', err));
+            });
+        }
+    </script>
+</head>
+
+<body class="bg-[#020617] text-slate-100 min-h-screen p-6 md:p-12 relative overflow-x-clip font-['Plus_Jakarta_Sans']">
+
+    <!-- ========================================== -->
+    <!-- NOTIFICATION TOAST CONTAINER              -->
+    <!-- ========================================== -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ========================================== -->
+    <div
+        class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-radial from-slate-900 via-[#030712] to-[#010208]">
+        <!-- 1. Grid Tech Core -->
+        <div class="absolute inset-0 cyber-grid"></div>
+        <!-- 2. Titik Node Koordinat -->
+        <div class="absolute inset-0 cyber-dots opacity-60"></div>
+        <!-- 3. Radar Scanline Efek -->
+        <div class="absolute inset-0 hacker-scanline"></div>
+
+        <!-- 4. Pendaran Neon Abstrak (Glow Pockets) -->
+        <div
+            class="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-purple-600/10 rounded-full blur-[130px] animate-pulse duration-[6000ms]">
+        </div>
+        <div
+            class="absolute bottom-[-15%] right-[-10%] w-[60vw] h-[60vw] bg-cyan-500/10 rounded-full blur-[130px] animate-pulse duration-[8000ms]">
+        </div>
+        <div class="absolute top-[40%] left-[35%] w-[30vw] h-[30vw] bg-blue-500/5 rounded-full blur-[100px]"></div>
+
+        <!-- 5. Bingkai Sudut HUD Taktis -->
+        <div class="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-cyan-500/20"></div>
+        <div class="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-cyan-500/20"></div>
+        <div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-cyan-500/20"></div>
+        <div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-cyan-500/20"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- HALAMAN LOGIN                              -->
+    <!-- ========================================== -->
+    <div id="login-page" class="fixed inset-0 z-20 flex items-center justify-center p-6">
+        <div class="glass-3d w-full max-w-md p-8 rounded-3xl text-center space-y-6 row-animate border border-slate-800/60 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+            style="animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div class="flex flex-col items-center">
+                <img src="Logo.png/Logo.png" alt="ZDI STOCK UTILITY Logo"
+                    class="h-24 w-auto object-contain drop-shadow-[0_0_25px_rgba(34,211,238,0.45)] mb-2 transition-all duration-300 hover:scale-110 cursor-pointer">
+                <p class="text-slate-400 mt-1 text-xs tracking-wide">Atur stok barang lu jadi gampang & aman cuy</p>
+            </div>
+
+            <!-- TAB PEMILIH MODE AUTH -->
+            <div class="flex border-b border-slate-800/60">
+                <button type="button" onclick="switchAuthTab('login')" id="tab-login"
+                    class="flex-1 pb-3 text-xs font-bold border-b-2 border-cyan-500 text-cyan-400 focus:outline-none transition-all cursor-pointer">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i> GAS MASUK </button>
+                <button type="button" onclick="switchAuthTab('register')" id="tab-register"
+                    class="flex-1 pb-3 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-300 focus:outline-none transition-all cursor-pointer">
+                    <i class="fa-solid fa-user-plus mr-1"></i> BIKIN AKUN </button>
+            </div>
+
+            <!-- FORM LOGIN -->
+            <form id="login-form" class="text-left space-y-4">
+                <!-- Step 1: Input Credentials -->
+                <div id="login-credentials-section" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama / ID Lu</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                                <i class="fa-solid fa-user text-xs"></i>
+                            </span>
+                            <input type="text" id="username" placeholder="admin"
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Password Lu</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                                <i class="fa-solid fa-lock text-xs"></i>
+                            </span>
+                            <input type="password" id="password" placeholder="••••••••"
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Input PIN Keamanan -->
+                <div id="login-otp-section" class="space-y-4 hidden">
+                    <div
+                        class="p-4 bg-cyan-950/30 border border-cyan-800/40 rounded-xl text-xs text-slate-300 leading-relaxed">
+                        <i class="fa-solid fa-shield-halved text-cyan-400 mr-1.5 animate-pulse"></i>
+                        Masukkan 6-digit PIN Keamanan Anda untuk menyelesaikan masuk.
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">PIN Keamanan</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                                <i class="fa-solid fa-key text-xs"></i>
+                            </span>
+                            <input type="password" id="auth-code" maxlength="6" placeholder="••••••" autocomplete="off"
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-black tracking-[0.25em] text-cyan-400 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="login-error" class="text-rose-400 text-xs font-semibold text-center hidden animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Username atau Password salah!
+                </div>
+
+                <div id="otp-error" class="text-rose-400 text-xs font-semibold text-center hidden animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> PIN Keamanan tidak valid!
+                </div>
+
+                <button type="submit" id="btn-login-submit"
+                    class="btn-3d w-full mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
+                </button>
+
+                <div id="otp-actions" class="flex gap-3 mt-2 hidden">
+                    <button type="button" onclick="cancelOtpStep()"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60 text-center">
+                        Gak Jadi
+                    </button>
+                    <button type="submit" id="btn-otp-verify"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-cyan-500/20 text-center">
+                        Verifikasi
+                    </button>
+                </div>
+            </form>
+
+            <!-- FORM REGISTER -->
+            <form id="register-form" class="text-left space-y-4 hidden">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Username
+                        Baru</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                        </span>
+                        <input type="text" id="reg-username" required placeholder="Contoh: operator"
+                            class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Password
+                        Baru</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </span>
+                        <input type="password" id="reg-password" required placeholder="••••••••"
+                            class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Gaskeun
+                        Password Baru</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                            <i class="fa-solid fa-shield-halved text-xs"></i>
+                        </span>
+                        <input type="password" id="reg-confirm-password" required placeholder="••••••••"
+                            class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">PIN Keamanan (6 Digit)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500">
+                            <i class="fa-solid fa-key text-xs"></i>
+                        </span>
+                        <input type="password" id="reg-pin" required maxlength="6" pattern="\d{6}" placeholder="••••••"
+                            class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-black tracking-[0.25em] text-cyan-400 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                    </div>
+                </div>
+
+                <div id="register-error" class="text-rose-400 text-xs font-semibold text-center hidden animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Username sudah terdaftar!
+                </div>
+
+                <button type="submit"
+                    class="btn-3d w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-user-check"></i> Buat Akun Baru
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- HALAMAN DASHBOARD (GRID LAYOUT)            -->
+    <!-- ========================================== -->
+    <div id="dashboard-page" class="w-full h-screen hidden z-10 relative flex-col lg:flex-row gap-6 pt-0 md:pt-6 px-0 md:px-6 max-w-[1600px] mx-auto pb-20 lg:pb-6">
+        
+        <!-- SIDEBAR (Khusus Desktop) -->
+        <aside class="hidden lg:flex flex-col w-[260px] glass-3d rounded-3xl border border-slate-800/60 h-[calc(100vh-3rem)] p-5 backdrop-blur-md bg-slate-950/80 shadow-lg shrink-0 overflow-y-auto custom-scroll relative z-20">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3 mb-8 px-2">
+                <img src="Logo.png/Logo.png" class="h-10 w-auto filter hover:brightness-110 drop-shadow-[0_0_15px_rgba(168,85,247,0.45)]">
+                <div>
+                    <h1 class="text-lg font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent leading-none">ZDI Stock</h1>
+                    <p class="text-[9px] text-slate-400 mt-1 uppercase tracking-wider">Utility Panel</p>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 space-y-2">
+                <button onclick="switchMobileTab('monitor')" id="side-nav-monitor" class="sidebar-nav-btn active w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <span>Monitor Utility</span>
+                </button>
+                <button onclick="switchMobileTab('add')" id="side-nav-add" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+                    <span> Nambah Barang </span>
+                </button>
+                <button onclick="switchMobileTab('logs')" id="side-nav-logs" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <span>Log Aktivitas</span>
+                </button>
+                <button onclick="switchMobileTab('maintenance')" id="side-nav-maintenance" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <span>Maintenance</span>
+                </button>
+                <button onclick="switchMobileTab('borrow')" id="side-nav-borrow" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <span>Peminjaman Aset</span>
+                </button>
+                <button onclick="installPWA()" id="side-nav-install" class="sidebar-nav-btn w-full hidden items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all text-left group shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span>Install App</span>
+                </button>
+            </nav>
+
+            <!-- Bottom Profile Section -->
+            <div class="mt-auto pt-5 border-t border-slate-800/60">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <div class="text-left">
+                        <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider leading-none">User Aktif</p>
+                        <h3 id="active-user-display" class="text-xs font-black text-white mt-1.5 flex items-center gap-1.5 leading-none">
+                            Admin <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        </h3>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openChangePasswordModal()" class="btn-action-3d flex-1 h-10 rounded-xl bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-cyan-900/30 border border-slate-700/60 transition-all" title="Ganti Password">
+                        <i class="fa-solid fa-key text-xs"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="btn-action-3d flex-1 h-10 rounded-xl bg-rose-950/40 text-rose-400 hover:text-white hover:bg-rose-600 border border-rose-900/40 transition-all" title="Keluar">
+                        <i class="fa-solid fa-power-off text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-[calc(100vh-3rem)] overflow-y-auto custom-scroll w-full relative pb-10">
+            
+            <!-- Mobile Header (Hidden on Desktop) -->
+            <header class="lg:hidden sticky top-0 z-30 w-full glass-3d px-4 py-3 border-b border-slate-800/60 mb-4 flex items-center justify-between backdrop-blur-md bg-slate-950/80">
+                <div class="flex items-center gap-3 text-left">
+                    <img src="Logo.png/Logo.png" class="h-8 w-auto">
+                    <div class="hidden sm:block">
+                        <h1 class="text-sm font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent leading-none">ZDI Stock</h1>
+                        <p class="text-[8px] text-slate-400 uppercase tracking-wider mt-0.5">Mobile Panel</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="text-right mr-1">
+                        <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider leading-none">User</p>
+                        <h3 id="mobile-active-user-display" class="text-[10px] font-black text-cyan-400 mt-1 flex items-center justify-end gap-1 leading-none">
+                            Admin
+                        </h3>
+                    </div>
+                    <button onclick="openChangePasswordModal()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 border border-slate-700/60 transition-all flex items-center justify-center" title="Ganti Password">
+                        <i class="fa-solid fa-key text-xs"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="w-8 h-8 rounded-xl bg-rose-950/40 hover:bg-rose-600 hover:text-white transition-all text-rose-400 border border-rose-900/40 flex items-center justify-center" title="Keluar">
+                        <i class="fa-solid fa-power-off text-xs"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Desktop Top Bar -->
+            <div class="hidden lg:flex sticky top-0 z-30 items-center justify-between mb-6 glass-3d px-6 py-4 rounded-3xl border border-slate-800/60 bg-slate-950/80 backdrop-blur-md shadow-lg">
+                <h2 id="page-title" class="text-lg font-black text-white flex items-center gap-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                    <i class="fa-solid fa-chart-simple text-cyan-400"></i> <span id="page-title-text">Monitor Utility</span>
+                </h2>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/50 border border-slate-800/60">
+                        <i class="fa-solid fa-boxes-stacked text-xs text-cyan-400"></i>
+                        <div class="text-left flex flex-col justify-center">
+                            <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider leading-none">Total Barang</p>
+                            <h3 id="total-items" class="text-sm font-black text-cyan-400 leading-none mt-0.5">0</h3>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+                        <span class="relative flex h-1.5 w-1.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500"></span>
+                        </span>
+                        LIVE
+                    </span>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT AREA -->
+            <div class="px-4 lg:px-0 space-y-6 pb-24 lg:pb-12">
+                <!-- LOW STOCK ALERT WIDGET -->
+                <div id="low-stock-widget" class="hidden glass-3d p-4 rounded-2xl border border-rose-500/40 bg-rose-950/20" style="animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+                            <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-rose-400">Peringatan: Stok Menipis!</h3>
+                            <p class="text-xs text-slate-300 mt-1">Beberapa barang memiliki stok tersisa 5 atau kurang. Segera lakukan restock.</p>
+                            <div id="low-stock-list" class="mt-3 space-y-1 max-h-24 overflow-y-auto custom-scroll pr-2 text-[11px]">
+                                <!-- Injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL MANAJEMEN USER (Hanya muncul jika admin masuk) -->
+                <div id="admin-auth-panel"
+                    class="glass-3d p-6 rounded-3xl border border-slate-800/60 hover:border-cyan-500/30 transition-colors hidden"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both;">
+                    <h2
+                        class="text-base font-bold mb-4 text-white flex items-center justify-between border-b border-slate-800 pb-3">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-users text-cyan-400"></i> Manajemen User & PIN</span>
+                        <span
+                            class="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide">Admin
+                            Only</span>
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Daftar Pengguna</p>
+                            <div id="admin-users-list"
+                                class="space-y-2 max-h-[220px] overflow-y-auto custom-scroll pr-1">
+                                <!-- List user akan dimuat dinamis lewat JavaScript -->
+                            </div>
+                            <div id="admin-users-empty"
+                                class="text-center py-4 bg-slate-950/20 border border-dashed border-slate-800 rounded-2xl hidden">
+                                <p class="text-[11px] text-slate-500">Belum ada user biasa</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/60 mt-4">
+                            <button onclick="backupDatabase()" class="btn-action-3d w-full py-3 bg-indigo-950/40 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-indigo-900/30 transition-colors shadow-[0_0_15px_rgba(79,70,229,0.1)] flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-database"></i> Backup Database (.sqlite)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL TAMBAH ITEM BARU -->
+                <div id="add-item-panel"
+                    class="glass-3d p-6 rounded-3xl border border-slate-800/60 hover:border-cyan-500/30 transition-colors lg:block"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    <h2
+                        class="text-base font-bold mb-5 text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <i class="fa-solid fa-square-plus text-cyan-400"></i> Tambah Item Baru
+                    </h2>
+                    <form id="stock-form" class="space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama
+                                Barang / Item (Atau Barcode)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="item-name" required placeholder="Contoh: Asus ROG Ally"
+                                    class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                                <button type="button" onclick="openScanner('item-name')" class="btn-action-3d px-4 bg-indigo-950/40 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl border border-indigo-900/30 transition-colors shadow-sm flex items-center justify-center" title="Scan Barcode">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Peruntukan
+                                / Kategori</label>
+                            <select id="item-category" required
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Peruntukan
+                                </option>
+                                <option value="PC" class="bg-slate-950 text-white">🖥️ PC / Laptop</option>
+                                <option value="Laptop" class="bg-slate-950 text-white">💻 Laptop</option>
+                                <option value="Monitor" class="bg-slate-950 text-white">🖥️ Monitor PC</option>
+                                <option value="Printer" class="bg-slate-950 text-white">🖨️ Printer</option>
+                                <option value="CCTV" class="bg-slate-950 text-white">📹 CCTV</option>
+                                <option value="Doorlock" class="bg-slate-950 text-white">🔒 Doorlock</option>
+                                <option value="Consumable" class="bg-slate-950 text-white">📦 Consumable</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Stok
+                                Awal</label>
+                            <input type="number" id="item-qty" required min="0" placeholder="0"
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Kondisi</label>
+                            <select id="item-condition" required
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                <option value="Normal" class="bg-slate-950 text-emerald-400">✅ Normal</option>
+                                <option value="Rusak" class="bg-slate-950 text-rose-400">❌ Rusak</option>
+                                <option value="Baru" class="bg-slate-950 text-emerald-400">✅ Baru</option>
+                                <option value="Bekas" class="bg-slate-950 text-amber-400">♻️ Bekas</option>
+                            </select>
+                        </div>
+
+                        <!-- Tambahan Khusus Printer -->
+                        <div id="printer-extra-fields" class="hidden space-y-4 pt-2 border-t border-slate-800/50 mt-2">
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Nama Vendor (Opsional)</label>
+                                <input type="text" id="item-vendor" placeholder="Contoh: INKNARA"
+                                    class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">IP Address (Opsional)</label>
+                                    <input type="text" id="item-ip" placeholder="Contoh: 10.62.39.164"
+                                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Area (Opsional)</label>
+                                    <input type="text" id="item-department" placeholder="Contoh: SEWING"
+                                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="btn-3d w-full mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20">
+                            <i class="fa-solid fa-paper-plane"></i> Masukkan Tabel
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-800">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Atau Import via Excel</label>
+                        <input type="file" id="excel-file" accept=".xlsx, .xls, .csv" class="hidden">
+                        <button type="button" onclick="document.getElementById('excel-file').click()"
+                            class="btn-action-3d w-full py-3 bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60 shadow-sm flex items-center justify-center gap-2 transition-colors">
+                            <i class="fa-solid fa-file-excel"></i> Pilih File Excel
+                        </button>
+                        <button type="button" onclick="downloadExcelTemplate()" class="text-[10px] text-cyan-400 hover:underline mt-2 inline-block cursor-pointer">Unduh Template Excel</button>
+                    </div>
+                </div>
+
+                <!-- PANEL MAINTENANCE & SERVIS -->
+                <div id="maintenance-panel"
+                    class="glass-3d rounded-3xl border border-slate-800/60 transition-colors hidden space-y-6"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    
+                    <!-- FORM KIRIM SERVIS -->
+                    <div class="p-6 border-b border-slate-800/80 bg-slate-950/40 rounded-t-3xl">
+                        <h2 class="text-base font-bold mb-5 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-screwdriver-wrench text-orange-400"></i> Form Kirim Servis / Maintenance
+                        </h2>
+                        <form id="maintenance-form" class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">PILIH BARANG (RUSAK)</label>
+                                <select id="svc-item" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                    <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang Rusak</option>
+                                    <!-- Injected via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">LOKASI SERVIS</label>
+                                <input type="text" id="svc-location" required placeholder="Contoh: Harco Mangga Dua" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">ESTIMASI BIAYA (RP)</label>
+                                <input type="number" id="svc-cost" required min="0" placeholder="Contoh: 150000" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">ESTIMASI SELESAI</label>
+                                <input type="date" id="svc-date" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] [color-scheme:dark]">
+                            </div>
+                            <button type="submit" class="btn-3d w-full mt-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-500/20">
+                                <i class="fa-solid fa-truck-fast"></i> KIRIM SERVIS
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TABEL DAFTAR SERVIS -->
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-list-ul text-orange-400"></i> Daftar Barang Dalam Servis
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <button onclick="exportServicesCSV()" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                    <i class="fa-solid fa-file-csv mr-1.5"></i> CSV </button>
+                                <button onclick="exportServicesPDF()" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                    <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                        <th class="p-4 pl-4 whitespace-nowrap">BARANG</th>
+                                        <th class="p-4 whitespace-nowrap">LOKASI</th>
+                                        <th class="p-4 whitespace-nowrap">BIAYA EST.</th>
+                                        <th class="p-4 whitespace-nowrap">TGL SELESAI</th>
+                                        <th class="p-4 whitespace-nowrap text-right">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="services-table-body" class="divide-y divide-slate-800/40 text-sm">
+                                </tbody>
+                            </table>
+                            <div id="services-empty-state" class="p-10 text-center hidden">
+                                <p class="text-slate-500 text-xs">Belum ada barang yang sedang diservis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL PEMINJAMAN ASET -->
+                <div id="borrow-panel"
+                    class="glass-3d rounded-3xl border border-slate-800/60 transition-colors hidden space-y-6"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    
+                    <!-- FORM PEMINJAMAN -->
+                    <div class="p-6 border-b border-slate-800/80 bg-slate-950/40 rounded-t-3xl">
+                        <h2 class="text-base font-bold mb-5 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-handshake text-indigo-400"></i> Form Peminjaman Aset
+                        </h2>
+                        <form id="borrow-form" class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">PILIH BARANG ASET</label>
+                                <select id="borrow-item" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                    <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang yang Mau Dipinjam</option>
+                                    <!-- Injected via JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">NAMA PEMINJAM / TEKNISI</label>
+                                <input type="text" id="borrow-name" required placeholder="Contoh: Budi Santoso" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">TANGGAL PINJAM</label>
+                                <input type="date" id="borrow-date" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] [color-scheme:dark]">
+                            </div>
+                            <button type="submit" class="btn-3d w-full mt-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20">
+                                <i class="fa-solid fa-hand-holding-hand"></i> PINJAMKAN
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TABEL DAFTAR PINJAMAN -->
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-list-ul text-indigo-400"></i> Daftar Aset Dipinjam
+                            </h2>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                        <th class="p-4 pl-4 whitespace-nowrap">BARANG</th>
+                                        <th class="p-4 whitespace-nowrap">PEMINJAM</th>
+                                        <th class="p-4 whitespace-nowrap">TGL PINJAM</th>
+                                        <th class="p-4 whitespace-nowrap text-right">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="borrowings-table-body" class="divide-y divide-slate-800/40 text-sm">
+                                </tbody>
+                            </table>
+                            <div id="borrowings-empty-state" class="p-10 text-center hidden">
+                                <p class="text-slate-500 text-xs">Semua aset aman. Tidak ada yang sedang dipinjam.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN: Filter & Tabel Monitor & Log -->
+            <div class=" space-y-4">
+                <!-- PANEL FILTER KATEGORI -->
+                <div id="filter-panel"
+                    class="glass-3d p-2 rounded-2xl flex flex-wrap gap-1 border border-slate-800/60 lg:flex"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    <button onclick="filterCategory('All')" id="btn-filter-All"
+                        class="filter-tab active flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/40">
+                        🌐 Semua
+                    </button>
+                    <button onclick="filterCategory('PC')" id="btn-filter-PC"
+                        class="filter-tab flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center text-slate-400 hover:text-white hover:bg-blue-500/10 border border-transparent hover:border-blue-500/40">
+                        🖥️ PC/Laptop
+                    </button>
+                    <button onclick="filterCategory('CCTV')" id="btn-filter-CCTV"
+                        class="filter-tab flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center text-slate-400 hover:text-white hover:bg-purple-500/10 border border-transparent hover:border-purple-500/40">
+                        📹 CCTV
+                    </button>
+                    <button onclick="filterCategory('Doorlock')" id="btn-filter-Doorlock"
+                        class="filter-tab flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center text-slate-400 hover:text-white hover:bg-orange-500/10 border border-transparent hover:border-orange-500/40">
+                        🔒 Doorlock
+                    </button>
+                    <button onclick="filterCategory('Consumable')" id="btn-filter-Consumable"
+                        class="filter-tab flex-1 py-2.5 px-3 text-xs font-bold rounded-xl transition-all cursor-pointer text-center text-slate-400 hover:text-white hover:bg-yellow-500/10 border border-transparent hover:border-yellow-500/40">
+                        📦 Consumable
+                    </button>
+                </div>
+
+                <!-- PANEL LIVE MONITOR TABEL -->
+                <div id="monitor-panel" class="glass-3d rounded-3xl overflow-hidden border border-slate-800/60 lg:block"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;">
+                    <div
+                        class="p-4 md:p-6 border-b border-slate-800/80 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-gradient-to-r from-slate-950/50 to-slate-950/20">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
+                            <h2 class="text-base font-bold text-white flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-satellite-dish text-emerald-400 animate-pulse"></i> Live Utility Monitor
+                            </h2>
+                            <!-- SEARCH BAR -->
+                            <div class="relative w-full sm:w-64 md:w-80">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                    <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                                </span>
+                                <input type="text" id="search-monitor" placeholder="Cari by Nama / ID..." 
+                                    oninput="renderTable()"
+                                    class="w-full bg-slate-900/60 border border-slate-800/80 rounded-xl pl-8 pr-9 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:bg-slate-900 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)]">
+                                <button type="button" onclick="openScanner('search-monitor')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-cyan-400 transition-colors" title="Scan Barcode">
+                                    <i class="fa-solid fa-qrcode text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto justify-start xl:justify-end">
+                            <button onclick="openSettingsModal()" class="btn-action-3d h-8 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer border border-slate-700/60 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
+                                <i class="fa-solid fa-gear sm:mr-1.5"></i> <span class="hidden sm:inline">Pengaturan</span> </button>
+                            <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(event)">
+                            <button onclick="document.getElementById('import-excel-file').click()" class="btn-action-3d h-8 px-3 rounded-lg bg-blue-950/40 hover:bg-blue-600 text-blue-400 hover:text-white flex items-center justify-center cursor-pointer border border-blue-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
+                                <i class="fa-solid fa-file-import sm:mr-1.5"></i> <span class="hidden sm:inline">Import</span> </button>
+                            <button onclick="exportToExcel()" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
+                                <i class="fa-solid fa-file-excel sm:mr-1.5"></i> <span class="hidden sm:inline">Export</span> </button>
+                            <button onclick="openModal('modal-export-inv')" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
+                                <i class="fa-solid fa-file-pdf sm:mr-1.5"></i> <span class="hidden sm:inline">Cetak PDF</span> </button>
+                            <span class="flex h-3 w-3 relative hidden sm:flex">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="general-table-container" class="max-h-[520px] overflow-y-auto overflow-x-auto custom-scroll">
+                        <table class="w-full text-left border-collapse sticky-header min-w-[600px] lg:min-w-0">
+                            <thead>
+                                <tr
+                                    class="border-b border-slate-800 text-slate-400 text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                    <th class="p-2 md:p-5 pl-3 md:pl-6 whitespace-nowrap"> Nama Barang </th>
+                                    <th class="p-2 md:p-5 text-center whitespace-nowrap">Peruntukan</th>
+                                    <th class="p-2 md:p-5 text-center whitespace-nowrap">Kondisi</th>
+                                    <th class="p-2 md:p-5 text-center whitespace-nowrap">Jumlah Stok</th>
+                                    <th class="p-2 md:p-5 text-center whitespace-nowrap">Aksi Real-Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stock-table-body" class="divide-y divide-slate-800/40 text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="printer-table-container" class="max-h-[520px] overflow-y-auto overflow-x-auto custom-scroll mt-4 border-t border-slate-800 pt-4 hidden">
+                        <h3 class="text-sm font-bold text-teal-400 mb-3 px-4 md:px-6"><i class="fa-solid fa-print"></i> Aset Khusus Printer</h3>
+                        <table class="w-full text-left border-collapse sticky-header min-w-[700px] lg:min-w-0">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                    <th class="p-2 md:p-4 pl-3 md:pl-6 whitespace-nowrap"> Nama Printer </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap"> IP Address </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap"> Area </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap"> Vendor </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">Kondisi</th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">Stok</th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printer-table-body" class="divide-y divide-slate-800/40 text-sm">
+                            </tbody>
+                        </table>
+                        <div id="printer-empty-state" class="p-10 text-center hidden">
+                            <p class="text-slate-500 text-sm">Belum ada data printer.</p>
+                        </div>
+                    </div>
+
+                    <div id="empty-state" class="p-16 text-center hidden">
+                        <div class="text-slate-700 text-6xl mb-4"><i class="fa-solid fa-inbox"></i></div>
+                        <p class="text-slate-400 text-sm font-medium">Tidak ada item dalam kategori ini.</p>
+                    </div>
+                </div>
+
+                <!-- PANEL GRAFIK STOK -->
+                <div id="chart-panel"
+                    class="glass-3d rounded-3xl overflow-hidden border border-slate-800/60 mt-6 lg:block"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;">
+                    <div
+                        class="p-6 border-b border-slate-800/80 flex justify-between items-center bg-gradient-to-r from-slate-950/50 to-slate-950/20">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-cyan-400"></i> Visualisasi Stok per Kategori
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="chart-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Chart PC -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-blue-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-desktop text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.6)]"></i> PC / Laptop</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-PC"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart Laptop -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-sky-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-laptop text-sky-400 drop-shadow-[0_0_5px_rgba(14,165,233,0.6)]"></i> Laptop</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-Laptop"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart Monitor -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-pink-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-desktop text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.6)]"></i> Monitor PC</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-Monitor"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart Printer -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-teal-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-print text-teal-400 drop-shadow-[0_0_5px_rgba(45,212,191,0.6)]"></i> Printer</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-Printer"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart CCTV -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-purple-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-video text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.6)]"></i> CCTV</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-CCTV"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart Doorlock -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-orange-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-key text-orange-400 drop-shadow-[0_0_5px_rgba(249,115,22,0.6)]"></i> Doorlock</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-Doorlock"></canvas>
+                                </div>
+                            </div>
+                            <!-- Chart Consumable -->
+                            <div class="bg-slate-950/40 border border-slate-800/50 p-4 rounded-2xl w-full h-[240px] transition-all duration-300 hover:border-yellow-500/30 hover:bg-slate-900/40 flex flex-col">
+                                <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2 flex-none"><i class="fa-solid fa-box text-yellow-400 drop-shadow-[0_0_5px_rgba(234,179,8,0.6)]"></i> Consumable</h3>
+                                <div class="relative flex-1 w-full min-h-0">
+                                    <canvas id="chart-Consumable"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="empty-chart-state" class="hidden text-center py-16">
+                            <div class="text-slate-700 text-5xl mb-3"><i class="fa-solid fa-chart-line"></i></div>
+                            <p class="text-slate-400 text-xs">Tidak ada data untuk ditampilkan pada grafik.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL AKTIVITAS (LOG) -->
+                <div id="logs-panel"
+                    class="glass-3d rounded-3xl overflow-hidden border border-slate-800/60 mt-6 lg:block"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;">
+                    <div
+                        class="p-6 border-b border-slate-800/80 flex justify-between items-center bg-gradient-to-r from-slate-950/50 to-slate-950/20">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> Log Aktivitas Real-Time
+                        </h2>
+                        <div class="flex items-center gap-3">
+                            <button id="btn-clear-logs" onclick="openModal('modal-clear-logs')" class="btn-action-3d h-8 px-3 rounded-lg bg-rose-950/40 hover:bg-rose-600 text-rose-400 hover:text-white flex items-center justify-center cursor-pointer border border-rose-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm hidden">
+                                <i class="fa-solid fa-trash-can mr-1.5"></i> Clear Logs
+                            </button>
+                            <button onclick="openModal('modal-export-logs')" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                <i class="fa-solid fa-file-pdf mr-1.5"></i> Cetak PDF </button>
+                            <span class="flex h-3 w-3 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500 shadow-lg shadow-cyan-500/50"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="max-h-[350px] overflow-y-auto overflow-x-auto custom-scroll">
+                        <table class="w-full text-left border-collapse sticky-header min-w-[700px] lg:min-w-0">
+                            <thead>
+                                <tr
+                                    class="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                    <th class="p-3 md:p-5 pl-4 md:pl-6 whitespace-nowrap">Tanggal</th>
+                                    <th class="p-3 md:p-5 whitespace-nowrap">Jam</th>
+                                    <th class="p-3 md:p-5 whitespace-nowrap">Siapa Nih</th>
+                                    <th class="p-3 md:p-5 whitespace-nowrap">Tindakan</th>
+                                    <th class="p-3 md:p-5 whitespace-nowrap">Objek / Target</th>
+                                    <th class="p-3 md:p-5 whitespace-nowrap">Infonya</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-log-body" class="divide-y divide-slate-800/40 text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="empty-log-state" class="p-16 text-center hidden">
+                        <div class="text-slate-700 text-6xl mb-4"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <p class="text-slate-400 text-sm font-medium">Belum ada aktivitas tercatat.</p>
+                    </div>
+                </div>
+            </div>
+
+        <!-- BOTTOM NAVIGATION SPACER FOR MOBILE -->
+        <div class="h-24 lg:hidden"></div>
+
+        <!-- BOTTOM NAV BAR FOR MOBILE VIEW -->
+        <div
+            class="lg:hidden fixed bottom-4 left-4 right-4 z-40 glass-3d rounded-2xl border border-slate-800/80 p-2 flex items-center justify-around backdrop-blur-lg bg-slate-950/80 shadow-2xl">
+            <button onclick="switchMobileTab('monitor')" id="nav-monitor"
+                class="mobile-nav-btn active flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-300 text-cyan-400">
+                <i class="fa-solid fa-chart-simple text-lg"></i>
+                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Utility</span>
+            </button>
+            <button onclick="switchMobileTab('add')" id="nav-add"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-300 text-slate-500 hover:text-slate-300">
+                <i class="fa-solid fa-circle-plus text-lg"></i>
+            </button>
+            <button onclick="switchMobileTab('logs')" id="nav-logs"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-300 text-slate-500 hover:text-slate-300">
+                <i class="fa-solid fa-clock-rotate-left text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
+                <span class="text-[9px] font-bold">Logs</span>
+            </button>
+            <button onclick="switchMobileTab('maintenance')" id="nav-maintenance"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-3 text-slate-500 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-screwdriver-wrench text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
+                <span class="text-[9px] font-bold">Servis</span>
+            </button>
+            <button onclick="switchMobileTab('borrow')" id="nav-borrow"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-3 text-slate-500 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-handshake text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
+                <span class="text-[9px] font-bold">Pinjam</span>
+            </button>
+            <button onclick="installPWA()" id="nav-install"
+                class="mobile-nav-btn hidden flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all duration-300 text-emerald-500 hover:text-emerald-300 relative">
+                <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <i class="fa-solid fa-download text-lg animate-bounce"></i>
+                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Install</span>
+            </button>
+        </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CUSTOM MODAL CONFIRMATION (3D)              -->
+    <!-- ========================================== -->
+    <div id="custom-confirm-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-center space-y-6 scale-95 transition-transform duration-300"
+            id="modal-content">
+            <div id="modal-icon-container"
+                class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-xl shadow-sm">
+                <i id="modal-icon" class="fa-solid"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h3 id="modal-title" class="text-base font-bold text-white">Gaskeun</h3>
+                <p id="modal-message" class="text-slate-400 text-xs leading-relaxed px-2"></p>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button id="btn-modal-cancel"
+                    class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                    Gak Jadi
+                </button>
+                <button id="btn-modal-confirm"
+                    class="btn-3d flex-1 py-3 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CUSTOM MODAL GANTI PASSWORD (3D)            -->
+    <!-- ========================================== -->
+    <div id="change-password-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-center space-y-6 scale-95 transition-transform duration-300"
+            id="password-modal-content">
+            <div
+                class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-xl text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)]">
+                <i class="fa-solid fa-key"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="text-base font-bold text-white">Ganti Password</h3>
+                <p class="text-slate-400 text-xs leading-relaxed">Perbarui password akun Anda untuk keamanan sistem.</p>
+            </div>
+
+            <form id="change-password-form" class="text-left space-y-3.5">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Password
+                        Lama</label>
+                    <input type="password" id="old-password" required placeholder="••••••••"
+                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Password
+                        Baru</label>
+                    <input type="password" id="new-password" required placeholder="••••••••"
+                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Gaskeun
+                        Password Baru</label>
+                    <input type="password" id="confirm-new-password" required placeholder="••••••••"
+                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                </div>
+
+                <div id="change-password-error"
+                    class="text-rose-400 text-xs font-semibold text-center hidden animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Error
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeChangePasswordModal()"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                        Gak Jadi
+                    </button>
+                    <button type="submit"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-cyan-500/20">
+                        Simpen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ========================================== -->
+    <!-- CUSTOM MODAL ADMIN GANTI PASSWORD (3D)      -->
+    <!-- ========================================== -->
+    <div id="admin-change-password-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-center space-y-6 scale-95 transition-transform duration-300"
+            id="admin-password-modal-content">
+            <div
+                class="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-xl text-blue-400 bg-blue-500/10 border border-blue-500/30 shadow-[inset_0_0_10px_rgba(59,130,246,0.2)]">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="text-base font-bold text-white">Ubah Password User</h3>
+                <p class="text-slate-400 text-xs leading-relaxed" id="admin-change-password-subtitle">Masukkan password baru untuk user.</p>
+            </div>
+
+            <form id="admin-change-password-form" class="text-left space-y-3.5">
+                <input type="hidden" id="admin-target-username">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Password Baru</label>
+                    <input type="text" id="admin-new-password" required placeholder="Minimal 4 Karakter" autocomplete="off"
+                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                </div>
+
+                <div id="admin-change-password-error"
+                    class="text-rose-400 text-xs font-semibold text-center hidden animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Error
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAdminChangePasswordModal()"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                        Gak Jadi
+                    </button>
+                    <button type="submit"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-500/20">
+                        Simpen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL EXPORT INVENTORY                     -->
+    <!-- ========================================== -->
+    <div id="modal-export-inv"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-left space-y-6 scale-95 transition-transform duration-300"
+            id="modal-export-inv-content">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/30">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Export PDF Inventory</h3>
+                    <p class="text-slate-400 text-[10px] uppercase tracking-wider">Pilih Opsi Export</p>
+                </div>
+            </div>
+
+            <form id="export-inv-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Format Cetak</label>
+                    <select id="export-inv-format" onchange="toggleExportInvColumns()" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all cursor-pointer">
+                        <option value="table">Laporan Tabel</option>
+                        <option value="label">Label Stiker Barcode (Grid)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Kategori</label>
+                    <select id="export-inv-category" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all cursor-pointer">
+                        <option value="All">Semua Kategori</option>
+                        <option value="PC">PC / Laptop</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Monitor">Monitor PC</option>
+                        <option value="Printer">Printer</option>
+                        <option value="CCTV">CCTV</option>
+                        <option value="Doorlock">Doorlock</option>
+                        <option value="Consumable">Consumable</option>
+                    </select>
+                </div>
+                
+                <div id="export-inv-columns-container">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Kolom</label>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors"><input type="checkbox" checked id="chk-inv-id" class="accent-emerald-500"> ID Item</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors"><input type="checkbox" checked id="chk-inv-name" class="accent-emerald-500"> Nama Barang </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors"><input type="checkbox" checked id="chk-inv-cat" class="accent-emerald-500"> Kategori</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors"><input type="checkbox" checked id="chk-inv-qty" class="accent-emerald-500"> Jumlah Stok</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors"><input type="checkbox" checked id="chk-inv-cond" class="accent-emerald-500"> Kondisi</label>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('modal-export-inv')"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                        Gak Jadi
+                    </button>
+                    <button type="button" onclick="submitExportInventory()"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-emerald-500/20">
+                        Generate PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL EXPORT LOGS                          -->
+    <!-- ========================================== -->
+    <div id="modal-export-logs"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-left space-y-6 scale-95 transition-transform duration-300"
+            id="modal-export-logs-content">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg text-cyan-400 bg-cyan-500/10 border border-cyan-500/30">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Export PDF Logs</h3>
+                    <p class="text-slate-400 text-[10px] uppercase tracking-wider">Pilih Opsi Export</p>
+                </div>
+            </div>
+
+            <form id="export-logs-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Rentang Waktu</label>
+                    <select id="export-logs-time" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer">
+                        <option value="All">Semua Log</option>
+                        <option value="Today">Hari Ini Aja</option>
+                        <option value="7Days">Seminggu Terakhir</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Kolom</label>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-date" class="accent-cyan-500"> Tanggal</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-time" class="accent-cyan-500"> Waktu</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-op" class="accent-cyan-500"> Operator</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-act" class="accent-cyan-500"> Aksi</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-item" class="accent-cyan-500"> Objek / Target</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors"><input type="checkbox" checked id="chk-log-detail" class="accent-cyan-500"> Detail</label>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('modal-export-logs')"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                        Gak Jadi
+                    </button>
+                    <button type="button" onclick="submitExportLogs()"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-cyan-500/20">
+                        Generate PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CLEAR LOGS (Admin Only) -->
+    <div id="modal-clear-logs"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-sm p-6 rounded-3xl text-left space-y-6 scale-95 transition-transform duration-300"
+            id="modal-clear-logs-content">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg text-rose-400 bg-rose-500/10 border border-rose-500/30">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white">Clear Activity Logs</h3>
+                    <p class="text-slate-400 text-[10px] uppercase tracking-wider">Hapus data log (Admin)</p>
+                </div>
+            </div>
+
+            <form id="clear-logs-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Rentang Waktu</label>
+                    <select id="clear-logs-time" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer">
+                        <option value="All">Semuanya Dah</option>
+                        <option value="Today">Hari Ini Aja</option>
+                        <option value="7Days">Seminggu Terakhir</option>
+                        <option value="OlderThan30Days">Lebih dari 30 Hari</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Jenis Aksi</label>
+                    <select id="clear-logs-action" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer">
+                        <option value="All">Semua Tindakan</option>
+                        <option value="Access">Akses Sistem (Login/Logout)</option>
+                        <option value="Transaction">Transaksi Stok (Tambah/Edit/Hapus)</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('modal-clear-logs')"
+                        class="btn-action-3d flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer border border-slate-700/60">
+                        Gak Jadi
+                    </button>
+                    <button type="button" onclick="submitClearLogs()"
+                        class="btn-3d flex-1 py-3 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg shadow-rose-500/20">
+                        Clear Logs
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- MODAL SCANNER -->
+    <div id="modal-scanner" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-md p-6 rounded-3xl text-left space-y-4 scale-95 transition-transform duration-300" id="modal-scanner-content">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg text-indigo-400 bg-indigo-500/10 border border-indigo-500/30">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-base font-bold text-white">Scan Barcode / QR</h3>
+                    <p class="text-slate-400 text-[10px] uppercase tracking-wider">Arahkan kamera ke barcode</p>
+                </div>
+                <button type="button" onclick="closeScanner()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="qr-reader" class="w-full bg-black rounded-xl overflow-hidden border border-slate-700/50"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-24 lg:bottom-10 right-5 transform translate-y-32 opacity-0 transition-all duration-500 flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-bold shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50 pointer-events-none backdrop-blur-md">
+        <i id="toast-icon" class="text-lg"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Barcode Viewer Modal -->
+    <div id="barcode-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl max-w-md w-full text-center shadow-2xl scale-95 transition-transform duration-300" id="barcode-modal-content">
+            <h3 class="text-white font-bold text-lg mb-1" id="barcode-item-name">Nama Barang</h3>
+            <p class="text-slate-400 text-xs mb-4">Barcode Internal ZDI</p>
+            <div class="bg-white p-4 rounded-2xl mx-auto flex justify-center mb-5 overflow-hidden w-full">
+                <svg id="barcode-svg" class="max-w-full h-auto"></svg>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeBarcodeModal()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-colors">Tutup</button>
+                <button onclick="printBarcode()" class="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition-colors shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                    <i class="fa-solid fa-print mr-2"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Modal -->
+    <div id="scanner-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] hidden flex flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl scale-95 transition-transform duration-300" id="scanner-modal-content">
+            <div class="bg-indigo-600 p-4 text-center">
+                <h3 class="text-white font-bold text-lg"><i class="fa-solid fa-qrcode mr-2"></i> Scan Barcode</h3>
+                <div class="mt-3 flex justify-center">
+                    <div class="bg-indigo-900/50 p-1 rounded-xl flex gap-1 relative w-48">
+                        <div id="scanner-mode-bg" class="absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-emerald-500 rounded-lg transition-all duration-300 shadow-md"></div>
+                        <button onclick="setScannerMode('IN')" id="btn-scan-in" class="flex-1 py-1.5 text-xs font-bold text-white relative z-10 transition-colors">IN (+)</button>
+                        <button onclick="setScannerMode('OUT')" id="btn-scan-out" class="flex-1 py-1.5 text-xs font-bold text-indigo-200 hover:text-white relative z-10 transition-colors">OUT (-)</button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="reader" class="w-full rounded-2xl overflow-hidden bg-black aspect-square flex items-center justify-center border-2 border-indigo-500/30"></div>
+            </div>
+            <div class="p-4 pt-0">
+                <button onclick="closeScannerModal()" class="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 font-bold transition-all border border-slate-700 hover:border-rose-500/50">
+                    Batal Scan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl max-w-md w-full shadow-2xl scale-95 transition-transform duration-300" id="settings-modal-content">
+            <h3 class="text-white font-bold text-lg mb-1 border-b border-slate-800 pb-3 flex items-center gap-2">
+                <i class="fa-solid fa-gear text-cyan-400"></i> Pengaturan Sistem
+            </h3>
+            <div class="mt-4 space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Telegram Bot Token</label>
+                    <input type="text" id="setting-bot-token" placeholder="Contoh: 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Telegram Chat ID / Channel (pakai @)</label>
+                    <input type="text" id="setting-chat-id" placeholder="Contoh: @zdiutility atau -100123456789" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                    <p class="text-[10px] text-slate-500 mt-1">Chat ID grup/user, atau username channel.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeSettingsModal()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-colors">Batal</button>
+                <button onclick="saveSettings()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold transition-colors shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                    <i class="fa-solid fa-save mr-2"></i> Simpan
+                </button>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-800">
+                <button onclick="testTelegram()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-sky-500/20 text-sky-400 font-bold transition-colors border border-slate-700 hover:border-sky-500/50 text-xs flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-telegram"></i> Test Kirim Pesan Telegram
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item History Modal -->
+    <div id="item-history-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-3xl overflow-hidden shadow-2xl scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]" id="item-history-modal-content">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-white font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Barang</h3>
+                    <p id="history-item-name" class="text-indigo-200 text-xs mt-1 font-bold">Nama Barang</p>
+                </div>
+                <button onclick="closeItemHistoryModal()" class="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto custom-scroll flex-1 bg-slate-950/50">
+                <div class="relative border-l border-slate-700 ml-3 space-y-6" id="item-history-list">
+                    <!-- Injected via JS -->
+                </div>
+                <div id="item-history-empty" class="text-center p-8 hidden">
+                    <i class="fa-solid fa-ghost text-4xl text-slate-700 mb-3 block"></i>
+                    <p class="text-slate-500 text-sm">Belum ada riwayat tercatat untuk barang ini.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jsPDF and AutoTable for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <script src="js/modules/01-api.js"></script>
+    <script src="js/modules/02-activity-log.js"></script>
+    <script src="js/modules/03-toast.js"></script>
+    <script src="js/modules/04-modal.js"></script>
+    <script src="js/modules/05-auth.js"></script>
+    <script src="js/modules/06-user-management.js"></script>
+    <script src="js/modules/07-dashboard.js"></script>
+    <script src="js/modules/08-charts.js"></script>
+    <script src="js/modules/09-maintenance.js"></script>
+    <script src="js/modules/10-excel.js"></script>
+    <script src="js/modules/11-barcode.js"></script>
+    <script src="js/modules/12-settings.js"></script>
+    <script src="js/modules/13-navigation.js"></script>
+    <script src="js/modules/14-sync.js"></script>
+    <script src="js/modules/15-pwa.js"></script>
+    <script src="js/modules/16-tracking.js"></script>
+    <script src="js/modules/17-backup.js"></script>
+    <script src="js/modules/18-borrowing.js"></script>
+    <script src="js/modules/19-item-history.js"></script>
+    <script src="js/modules/20-barcode-printing.js"></script>
+</body>
+
+</html>
