@@ -1249,6 +1249,10 @@
                 <div id="reader" class="w-full rounded-2xl overflow-hidden bg-black aspect-square flex items-center justify-center border-2 border-indigo-500/30"></div>
             </div>
             <div class="p-4 pt-0">
+                <input type="file" id="scanner-file-input" accept="image/*" capture="environment" class="hidden" onchange="handleFileScan(event)">
+                <button onclick="document.getElementById('scanner-file-input').click()" class="w-full py-3 mb-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-camera"></i> Foto Barcode (Khusus iOS / Error)
+                </button>
                 <button onclick="closeScannerModal()" class="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 font-bold transition-all border border-slate-700 hover:border-rose-500/50">
                     Batal Scan
                 </button>

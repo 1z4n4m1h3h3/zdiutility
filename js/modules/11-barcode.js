@@ -134,35 +134,61 @@ window.openScanner = function (targetInputId) {
     }
 
     html5QrcodeScanner.render((decodedText) => {
-        // Handle successful scan
         closeScannerModal();
-
-        const scannedItem = inventory.find(i => i.id === decodedText);
-        if (scannedItem) {
-            if (window.scannerMode === 'IN') {
-                changeQty(scannedItem.id, 1);
-                showToast(`Sukses! Stok ${scannedItem.name} +1`, 'success', 4000);
-            } else {
-                if (scannedItem.qty > 0) {
-                    changeQty(scannedItem.id, -1);
-                    showToast(`Sukses! Stok ${scannedItem.name} diambil 1`, 'success', 4000);
-                } else {
-                    showToast(`Gagal! Stok ${scannedItem.name} kosong!`, 'error', 4000);
-                }
-            }
-        } else {
-            // Not found in internal DB, fill input for new registration
-            const inputEl = document.getElementById(targetInputId);
-            if (inputEl) {
-                inputEl.value = decodedText;
-                showToast('Barcode baru. Silakan isi form dan daftarkan barang.', 'info', 4000);
-            } else {
-                showToast('Barcode tidak terdaftar dalam sistem.', 'warning', 4000);
-            }
-        }
+        processScanResult(decodedText, targetInputId);
     }, (error) => {
         // Ignore scan failures
     });
+}
+
+function processScanResult(decodedText, targetInputId) {
+    const scannedItem = inventory.find(i => i.id === decodedText);
+    if (scannedItem) {
+        if (window.scannerMode === 'IN') {
+            changeQty(scannedItem.id, 1);
+            showToast(`Sukses! Stok ${scannedItem.name} +1`, 'success', 4000);
+        } else {
+            if (scannedItem.qty > 0) {
+                changeQty(scannedItem.id, -1);
+                showToast(`Sukses! Stok ${scannedItem.name} diambil 1`, 'success', 4000);
+            } else {
+                showToast(`Gagal! Stok ${scannedItem.name} kosong!`, 'error', 4000);
+            }
+        }
+    } else {
+        const inputEl = document.getElementById(targetInputId);
+        if (inputEl) {
+            inputEl.value = decodedText;
+            showToast('Barcode baru. Silakan isi form dan daftarkan barang.', 'info', 4000);
+        } else {
+            showToast('Barcode tidak terdaftar dalam sistem.', 'warning', 4000);
+        }
+    }
+}
+
+window.handleFileScan = function (event) {
+    if (event.target.files.length == 0) return;
+    const file = event.target.files[0];
+
+    if (typeof Html5Qrcode === 'undefined') {
+        showToast('Library Scanner belum termuat!', 'warning');
+        return;
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    showToast('Sedang membaca foto barcode...', 'info');
+
+    html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+            closeScannerModal();
+            processScanResult(decodedText, 'new-item-id');
+            if(html5QrcodeScanner) html5QrcodeScanner.clear().catch(e=>console.log(e));
+        })
+        .catch(err => {
+            showToast('Gagal membaca barcode dari gambar/foto.', 'error', 4000);
+        });
+    
+    event.target.value = ''; // Reset input
 }
 
 window.closeScannerModal = function () {
