@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arfutility-v9';
+const CACHE_NAME = 'arfutility-v10';
 const ASSETS_TO_CACHE = [
   'index.html',
   'css/style.css',
