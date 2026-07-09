@@ -89,7 +89,6 @@ window.printBarcode = function () {
     printWindow.document.close();
 }
 
-let html5QrcodeScanner = null;
 window.scannerMode = 'IN';
 
 window.setScannerMode = function (mode) {
@@ -124,21 +123,10 @@ window.openScanner = function (targetInputId) {
         modalContent.classList.remove('scale-95');
     }, 10);
 
-    if (typeof Html5QrcodeScanner === 'undefined') {
+    if (typeof Html5Qrcode === 'undefined') {
         showToast('Library Scanner belum termuat!', 'warning');
         return;
     }
-
-    if (!html5QrcodeScanner) {
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-    }
-
-    html5QrcodeScanner.render((decodedText) => {
-        closeScannerModal();
-        processScanResult(decodedText, targetInputId);
-    }, (error) => {
-        // Ignore scan failures
-    });
 }
 
 function processScanResult(decodedText, targetInputId) {
@@ -182,7 +170,6 @@ window.handleFileScan = function (event) {
         .then(decodedText => {
             closeScannerModal();
             processScanResult(decodedText, 'new-item-id');
-            if(html5QrcodeScanner) html5QrcodeScanner.clear().catch(e=>console.log(e));
         })
         .catch(err => {
             showToast('Gagal membaca barcode dari gambar/foto.', 'error', 4000);
@@ -197,10 +184,6 @@ window.closeScannerModal = function () {
 
     modal.classList.add('opacity-0');
     modalContent.classList.add('scale-95');
-
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(e => console.log('Scanner clear error', e));
-    }
 
     setTimeout(() => {
         modal.classList.add('hidden');
