@@ -157,11 +157,20 @@ function initDB() {
         });
 
         // FORCE RESET PASSWORDS ON STARTUP (to fix VPS login issues)
-        const hashedAdmin = bcrypt.hashSync('admin', 10);
+        const hashedAdmin = bcrypt.hashSync('Aezakmi!.1', 10);
         const hashedUsers = bcrypt.hashSync('12345678', 10);
-        db.run('UPDATE users SET password = ? WHERE username = ? COLLATE NOCASE', [hashedAdmin, 'admin']);
+        
+        // Ensure admin exists
+        db.get('SELECT id FROM users WHERE username = ? COLLATE NOCASE', ['admin'], (err, row) => {
+            if (!row) {
+                db.run('INSERT INTO users (id, username, password, pin) VALUES (?, ?, ?, ?)', [crypto.randomUUID(), 'admin', hashedAdmin, '123456']);
+            } else {
+                db.run('UPDATE users SET password = ? WHERE username = ? COLLATE NOCASE', [hashedAdmin, 'admin']);
+            }
+        });
+        
         db.run('UPDATE users SET password = ? WHERE username != ? COLLATE NOCASE', [hashedUsers, 'admin']);
-        console.log("Passwords have been reset automatically for all users.");
+        console.log("Passwords have been reset automatically for all users. Admin password is now Aezakmi!.1");
     });
 }
 
