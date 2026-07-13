@@ -15,7 +15,7 @@ function renderSvcItemDropdown() {
     dropdown.innerHTML = '<option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang Rusak</option>';
 
     // Hanya tampilkan barang yang stoknya > 0 dan kondisinya Rusak
-    inventory.filter(i => i.qty > 0 && i.condition === 'Rusak').forEach(item => {
+    inventory.filter(i => i.qty > 0 && i.condition && i.condition.toLowerCase() === 'rusak').forEach(item => {
         dropdown.innerHTML += `<option value="${item.id}">${item.name} (Sisa: ${item.qty})</option>`;
     });
 

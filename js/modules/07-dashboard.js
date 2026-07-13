@@ -160,7 +160,12 @@ function renderTable() {
         const matchesCategory = currentFilter === 'All' || item.category === currentFilter;
         const matchesSearch = searchTerm === '' ||
             item.name.toLowerCase().includes(searchTerm) ||
-            (item.id && item.id.toLowerCase().includes(searchTerm));
+            (item.id && item.id.toLowerCase().includes(searchTerm)) ||
+            (item.ip && item.ip.toLowerCase().includes(searchTerm)) ||
+            (item.area && item.area.toLowerCase().includes(searchTerm)) ||
+            (item.vendor && item.vendor.toLowerCase().includes(searchTerm)) ||
+            (item.department && item.department.toLowerCase().includes(searchTerm)) ||
+            (item.condition && item.condition.toLowerCase().includes(searchTerm));
         return matchesCategory && matchesSearch;
     });
 

@@ -93,6 +93,18 @@ function updateActivityLog() {
             actionBadge = '🚪 Cabut dari Sistem';
             actionColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
             actionIcon = 'fa-solid fa-power-off';
+        } else if (log.action === 'MAINTENANCE_OUT') {
+            actionBadge = '🛠️ Kirim Servis';
+            actionColor = 'text-orange-400 bg-orange-500/10 border-orange-500/20';
+            actionIcon = 'fa-solid fa-wrench';
+        } else if (log.action === 'MAINTENANCE_IN') {
+            actionBadge = '✅ Selesai Servis';
+            actionColor = 'text-teal-400 bg-teal-500/10 border-teal-500/20';
+            actionIcon = 'fa-solid fa-check-double';
+        } else if (log.action === 'EDIT_ITEM') {
+            actionBadge = '📝 Ngubah Data';
+            actionColor = 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+            actionIcon = 'fa-solid fa-pen';
         }
 
         tr.innerHTML = `
