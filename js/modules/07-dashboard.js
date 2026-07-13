@@ -209,6 +209,24 @@ function renderTable() {
                 });
             }
         }
+        
+        // Render Printer Summary
+        const printerSummary = document.getElementById('printer-summary');
+        if (printerSummary) {
+            const total = printerItems.length;
+            const mstekCount = printerItems.filter(i => i.vendor && i.vendor.toUpperCase().includes('MSTEK')).length;
+            const inknaraCount = printerItems.filter(i => i.vendor && i.vendor.toUpperCase().includes('INKNARA')).length;
+            const konicaCount = printerItems.filter(i => i.vendor && (i.vendor.toUpperCase().includes('KONICA') || i.vendor.toUpperCase().includes('KOINK'))).length;
+            const otherCount = total - (mstekCount + inknaraCount + konicaCount);
+            
+            printerSummary.innerHTML = `
+                <span class="px-2.5 py-1 bg-slate-800/80 text-slate-300 text-[11px] font-medium rounded border border-slate-700 shadow-sm">Total Unit: <strong class="text-white ml-1">${total}</strong></span>
+                <span class="px-2.5 py-1 bg-blue-900/30 text-blue-300 text-[11px] font-medium rounded border border-blue-800/50 shadow-sm">MSTEK: <strong class="text-white ml-1">${mstekCount}</strong></span>
+                <span class="px-2.5 py-1 bg-rose-900/30 text-rose-300 text-[11px] font-medium rounded border border-rose-800/50 shadow-sm">INKNARA: <strong class="text-white ml-1">${inknaraCount}</strong></span>
+                <span class="px-2.5 py-1 bg-emerald-900/30 text-emerald-300 text-[11px] font-medium rounded border border-emerald-800/50 shadow-sm">KOINK / KONICA: <strong class="text-white ml-1">${konicaCount}</strong></span>
+                ${otherCount > 0 ? `<span class="px-2.5 py-1 bg-slate-800/40 text-slate-400 text-[11px] font-medium rounded border border-slate-700/50 shadow-sm">Lainnya: <strong class="text-white ml-1">${otherCount}</strong></span>` : ''}
+            `;
+        }
     }
 }
 
