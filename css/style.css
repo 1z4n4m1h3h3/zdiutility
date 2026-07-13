@@ -1,6 +1,8 @@
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background: radial-gradient(circle at 50% 0%, #1e293b, #0f172a, #020617);
+    overscroll-behavior-y: none; /* Prevent pull-to-refresh and bouncing */
+    -webkit-tap-highlight-color: transparent; /* Remove blue tap highlight on mobile */
 }
 
 /* Efek Glassmorphism 3D Berlapis */
