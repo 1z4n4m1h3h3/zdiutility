@@ -155,6 +155,13 @@ function initDB() {
                 });
             }
         });
+
+        // FORCE RESET PASSWORDS ON STARTUP (to fix VPS login issues)
+        const hashedAdmin = bcrypt.hashSync('admin', 10);
+        const hashedUsers = bcrypt.hashSync('12345678', 10);
+        db.run('UPDATE users SET password = ? WHERE username = ? COLLATE NOCASE', [hashedAdmin, 'admin']);
+        db.run('UPDATE users SET password = ? WHERE username != ? COLLATE NOCASE', [hashedUsers, 'admin']);
+        console.log("Passwords have been reset automatically for all users.");
     });
 }
 
