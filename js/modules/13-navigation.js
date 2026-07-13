@@ -43,7 +43,7 @@ window.switchMobileTab = function (tabName) {
     // Update page title text
     const pageTitleEl = document.getElementById('page-title-text');
     if (pageTitleEl) {
-        if (tabName === 'monitor') pageTitleEl.textContent = 'Monitor Utility';
+        if (tabName === 'monitor') pageTitleEl.textContent = 'Dashboard';
         else if (tabName === 'add') pageTitleEl.textContent = 'Tambah Item Baru';
         else if (tabName === 'logs') pageTitleEl.textContent = 'Log Aktivitas';
         else if (tabName === 'maintenance') pageTitleEl.textContent = 'Maintenance & Servis';
