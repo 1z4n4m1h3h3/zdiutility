@@ -37,7 +37,10 @@ function renderServicesTable() {
 
     if (servicesEmptyState) servicesEmptyState.classList.add('hidden');
 
+    let totalBiaya = 0;
+
     maintenanceList.forEach(svc => {
+        totalBiaya += parseInt(svc.estCost) || 0;
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/20 text-sm transition-colors';
         tr.innerHTML = `
@@ -53,6 +56,16 @@ function renderServicesTable() {
         `;
         servicesTableBody.appendChild(tr);
     });
+
+    if (maintenanceList.length > 0) {
+        const trTotal = document.createElement('tr');
+        trTotal.className = 'bg-slate-900/80 text-sm border-t-2 border-slate-700/50';
+        trTotal.innerHTML = `
+            <td class="p-4 pl-4 font-black text-white whitespace-nowrap uppercase tracking-wider" colspan="2">TOTAL (${maintenanceList.length} ITEM)</td>
+            <td class="p-4 font-black text-emerald-400 text-xs tracking-wider" colspan="3">Rp ${totalBiaya.toLocaleString('id-ID')}</td>
+        `;
+        servicesTableBody.appendChild(trTotal);
+    }
 }
 
 if (maintenanceForm) {

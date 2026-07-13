@@ -45,6 +45,15 @@ window.renderBorrowingsTable = function () {
         `;
         tableBody.appendChild(tr);
     });
+
+    if (borrowingsList.length > 0) {
+        const trTotal = document.createElement('tr');
+        trTotal.className = 'bg-slate-900/80 text-sm border-t-2 border-slate-700/50';
+        trTotal.innerHTML = `
+            <td class="p-4 font-black text-white whitespace-nowrap uppercase tracking-wider" colspan="4">TOTAL (${borrowingsList.length} ITEM) DIPINJAM</td>
+        `;
+        tableBody.appendChild(trTotal);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
