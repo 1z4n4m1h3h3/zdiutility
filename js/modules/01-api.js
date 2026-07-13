@@ -5,7 +5,17 @@
 const isFile = window.location.protocol === 'file:';
 const defaultHost = "10.62.38.204"; // Fallback IP
 const host = window.location.hostname || defaultHost;
-const API_URL = isFile ? `http://${host}:3000` : window.location.origin;
+
+// Jika user testing di Live Server (port 5500) atau GitHub Pages, arahkan ke backend lokal
+const isGithub = window.location.hostname.includes('github.io');
+const isLiveServer = window.location.port !== '3000' && window.location.port !== '';
+
+let API_URL;
+if (isFile || isGithub || isLiveServer) {
+    API_URL = `http://${host === '127.0.0.1' || host === 'localhost' || isGithub ? defaultHost : host}:3000`;
+} else {
+    API_URL = window.location.origin;
+}
 
 function initDB() {
     return Promise.resolve(); // json-server endpoint sudah diatur di API_URL
