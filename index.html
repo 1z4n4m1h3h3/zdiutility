@@ -408,15 +408,9 @@
                     </h2>
                     <form id="stock-form" class="space-y-5">
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama
-                                Barang / Item (Atau Barcode)</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="item-name" required placeholder="Contoh: Asus ROG Ally"
-                                    class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                                <button type="button" onclick="openScanner('item-name')" class="btn-action-3d px-4 bg-indigo-950/40 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl border border-indigo-900/30 transition-colors shadow-sm flex items-center justify-center" title="Scan Barcode">
-                                    <i class="fa-solid fa-qrcode"></i>
-                                </button>
-                            </div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Barang / Item</label>
+                            <input type="text" id="item-name" required placeholder="Contoh: Asus ROG Ally"
+                                class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
                         </div>
 
                         <div>
@@ -1321,6 +1315,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <script src="js/modules/01-api.js"></script>
     <script src="js/modules/02-activity-log.js"></script>

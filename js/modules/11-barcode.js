@@ -111,6 +111,7 @@ window.setScannerMode = function (mode) {
 }
 
 window.openScanner = function (targetInputId) {
+    window.currentScannerTargetId = targetInputId; // Store globally for handleFileScan
     const modal = document.getElementById('scanner-modal');
     const modalContent = document.getElementById('scanner-modal-content');
 
@@ -134,11 +135,11 @@ function processScanResult(decodedText, targetInputId) {
     if (scannedItem) {
         if (window.scannerMode === 'IN') {
             changeQty(scannedItem.id, 1);
-            showToast(`Sukses! Stok ${scannedItem.name} +1`, 'success', 4000);
+            // changeQty already fires a toast
         } else {
             if (scannedItem.qty > 0) {
                 changeQty(scannedItem.id, -1);
-                showToast(`Sukses! Stok ${scannedItem.name} diambil 1`, 'success', 4000);
+                // changeQty already fires a toast
             } else {
                 showToast(`Gagal! Stok ${scannedItem.name} kosong!`, 'error', 4000);
             }
@@ -147,7 +148,9 @@ function processScanResult(decodedText, targetInputId) {
         const inputEl = document.getElementById(targetInputId);
         if (inputEl) {
             inputEl.value = decodedText;
-            showToast('Barcode baru. Silakan isi form dan daftarkan barang.', 'info', 4000);
+            // Also trigger oninput to make sure the table filters if it's the search box
+            inputEl.dispatchEvent(new Event('input'));
+            showToast('Barcode berhasil di-scan.', 'info', 4000);
         } else {
             showToast('Barcode tidak terdaftar dalam sistem.', 'warning', 4000);
         }
@@ -169,7 +172,8 @@ window.handleFileScan = function (event) {
     html5QrCode.scanFile(file, true)
         .then(decodedText => {
             closeScannerModal();
-            processScanResult(decodedText, 'new-item-id');
+            const targetId = window.currentScannerTargetId || 'search-monitor';
+            processScanResult(decodedText, targetId);
         })
         .catch(err => {
             showToast('Gagal membaca barcode dari gambar/foto.', 'error', 4000);
