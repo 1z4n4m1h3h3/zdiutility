@@ -5,3 +5,5 @@ node_modules/
 nohup.out
 server.log
 backup/
+*.sqlite-shm
+*.sqlite-wal
