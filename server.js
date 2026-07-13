@@ -5,6 +5,9 @@ const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const crypto = require('crypto');
 const https = require('https');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'zdi-stock-utility-super-secret-key';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +21,7 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
         console.error('Error opening database', err.message);
     } else {
         console.log('Connected to SQLite database.');
+        db.run('PRAGMA journal_mode = WAL;');
         initDB();
     }
 });
@@ -139,13 +143,40 @@ function initDB() {
                 console.log('Migration completed.');
             }
         });
+        
+        // Security Migration: Hash plain text passwords
+        db.all('SELECT id, password FROM users', [], (err, rows) => {
+            if (!err && rows) {
+                rows.forEach(row => {
+                    if (row.password && !row.password.startsWith('$2a$') && !row.password.startsWith('$2b$')) {
+                        const hashed = bcrypt.hashSync(row.password, 10);
+                        db.run('UPDATE users SET password = ? WHERE id = ?', [hashed, row.id]);
+                    }
+                });
+            }
+        });
     });
 }
 
 const tables = ['users', 'inventory', 'activity_log', 'auth_codes', 'services', 'borrowings'];
 
+// Middleware untuk proteksi JWT
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
+    
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Invalid token.' });
+        req.user = user;
+        next();
+    });
+}
+
+
 // Backup endpoint
-app.get('/api/backup', (req, res) => {
+app.get('/api/backup', authenticateToken, (req, res) => {
     const file = __dirname + '/database.sqlite';
     res.download(file, `ZDI_Stock_Backup_${Date.now()}.sqlite`, (err) => {
         if (err) {
@@ -156,7 +187,7 @@ app.get('/api/backup', (req, res) => {
 });
 
 // SETTINGS Endpoints
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', authenticateToken, (req, res) => {
     db.all('SELECT * FROM settings', [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         const settings = {};
@@ -165,7 +196,7 @@ app.get('/api/settings', (req, res) => {
     });
 });
 
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', authenticateToken, (req, res) => {
     const keys = Object.keys(req.body);
     if (keys.length === 0) return res.json({ success: true });
 
@@ -186,7 +217,7 @@ app.post('/api/settings', (req, res) => {
 });
 
 // NOTIFY Endpoint (Telegram)
-app.post('/api/notify', (req, res) => {
+app.post('/api/notify', authenticateToken, (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message is required' });
 
@@ -247,15 +278,25 @@ app.post('/api/login', (req, res) => {
     const { username, password, pin } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
     
-    db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(401).json({ error: 'Invalid credentials' });
         
         // Phase 1: Check password
         if (password) {
-            if (row.password === password) {
-                // If it's admin, they might not need pin in the original logic, but let's return success for phase 1
-                return res.json({ success: true, requirePin: row.username.toLowerCase() !== 'admin', user: row });
+            const match = await bcrypt.compare(password, row.password);
+            if (match) {
+                // Admin bypasses pin, normal user needs pin
+                const requirePin = row.username.toLowerCase() !== 'admin';
+                if (!requirePin) {
+                    const token = jwt.sign({ id: row.id, username: row.username }, JWT_SECRET, { expiresIn: '24h' });
+                    // Remove password and pin before sending user object
+                    const { password: _p, pin: _pin, ...safeUser } = row;
+                    return res.json({ success: true, requirePin: false, user: safeUser, token });
+                } else {
+                    const { password: _p, pin: _pin, ...safeUser } = row;
+                    return res.json({ success: true, requirePin: true, user: safeUser });
+                }
             } else {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
@@ -264,7 +305,9 @@ app.post('/api/login', (req, res) => {
         // Phase 2: Check pin
         if (pin) {
             if (row.pin === pin) {
-                return res.json({ success: true, user: row });
+                const token = jwt.sign({ id: row.id, username: row.username }, JWT_SECRET, { expiresIn: '24h' });
+                const { password: _p, pin: _pin, ...safeUser } = row;
+                return res.json({ success: true, user: safeUser, token });
             } else {
                 return res.status(401).json({ error: 'Invalid PIN' });
             }
@@ -274,13 +317,37 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-app.post('/api/change-password', (req, res) => {
-    const { username, oldPassword, newPassword } = req.body;
-    db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
+app.post('/api/register', async (req, res) => {
+    const { username, password, pin } = req.body;
+    if (!username || !password || !pin) return res.status(400).json({ error: 'All fields required' });
+    
+    db.get('SELECT id FROM users WHERE username = ? COLLATE NOCASE', [username], async (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!row || row.password !== oldPassword) return res.status(401).json({ error: 'Invalid credentials' });
+        if (row) return res.status(400).json({ error: 'Username already exists' });
         
-        db.run('UPDATE users SET password = ? WHERE id = ?', [newPassword, row.id], (err) => {
+        const hashedPass = await bcrypt.hash(password, 10);
+        const id = Date.now().toString();
+        
+        db.run('INSERT INTO users (id, username, password, pin) VALUES (?, ?, ?, ?)', [id, username, hashedPass, pin], (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ success: true, id, username });
+        });
+    });
+});
+
+
+app.post('/api/change-password', authenticateToken, (req, res) => {
+    const { username, oldPassword, newPassword } = req.body;
+    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(401).json({ error: 'Invalid credentials' });
+        
+        const match = await bcrypt.compare(oldPassword, row.password);
+        if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+        
+        const hashedPass = await bcrypt.hash(newPassword, 10);
+        
+        db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPass, row.id], (err) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ success: true });
         });
@@ -288,7 +355,7 @@ app.post('/api/change-password', (req, res) => {
 });
 
 // GET endpoints
-app.get('/:storeName', (req, res) => {
+app.get('/:storeName', authenticateToken, (req, res) => {
     const { storeName } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
@@ -329,7 +396,7 @@ app.get('/:storeName', (req, res) => {
 });
 
 // POST endpoint
-app.post('/:storeName', (req, res) => {
+app.post('/:storeName', authenticateToken, (req, res) => {
     const { storeName } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
@@ -352,7 +419,7 @@ app.post('/:storeName', (req, res) => {
 });
 
 // PUT endpoint
-app.put('/:storeName/:id', (req, res) => {
+app.put('/:storeName/:id', authenticateToken, (req, res) => {
     const { storeName, id } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
@@ -375,7 +442,7 @@ app.put('/:storeName/:id', (req, res) => {
 });
 
 // BULK DELETE endpoint
-app.post('/api/bulk_delete/:storeName', (req, res) => {
+app.post('/api/bulk_delete/:storeName', authenticateToken, (req, res) => {
     const { storeName } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
@@ -403,7 +470,7 @@ app.post('/api/bulk_delete/:storeName', (req, res) => {
 });
 
 // DELETE endpoint
-app.delete('/:storeName/:id', (req, res) => {
+app.delete('/:storeName/:id', authenticateToken, (req, res) => {
     const { storeName, id } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 

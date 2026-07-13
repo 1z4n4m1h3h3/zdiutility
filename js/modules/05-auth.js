@@ -171,7 +171,7 @@ loginForm.addEventListener('submit', async (e) => {
         try {
             const res = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ username: userInp, password: passInp })
             });
             const authRes = await res.json();
@@ -188,6 +188,7 @@ loginForm.addEventListener('submit', async (e) => {
                 // Admin langsung masuk bypass OTP
                 sessionStorage.setItem('arf_session_active', 'true');
                 sessionStorage.setItem('arf_active_user', foundUser.username);
+                if (authRes.token) sessionStorage.setItem('arf_token', authRes.token);
                 loginForm.reset();
 
                 const deviceStr = getDeviceDetails();
@@ -237,7 +238,7 @@ loginForm.addEventListener('submit', async (e) => {
         try {
             const res = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ username: pendingUser.username, pin: codeInp })
             });
             const authRes = await res.json();
@@ -253,6 +254,7 @@ loginForm.addEventListener('submit', async (e) => {
             // Selesaikan login
             sessionStorage.setItem('arf_session_active', 'true');
             sessionStorage.setItem('arf_active_user', pendingUser.username);
+            if (authRes.token) sessionStorage.setItem('arf_token', authRes.token);
 
             const activeUser = pendingUser.username;
             const deviceStr = getDeviceDetails();
@@ -297,14 +299,7 @@ registerForm.addEventListener('submit', (e) => {
         return;
     }
 
-    const userExists = userList.some(u => u.username.toLowerCase() === regUser.toLowerCase());
-
-    if (userExists) {
-        registerError.innerText = 'ID lu udah ada yang pake nih.!';
-        registerError.classList.remove('hidden');
-        showToast('ID lu udah ada yang pake nih.!', 'error', 3000);
-        return;
-    }
+    
 
     if (regPin.length !== 6 || !/^\d{6}$/.test(regPin)) {
         registerError.innerText = 'PIN harus terdiri dari 6 angka!';
@@ -313,14 +308,28 @@ registerForm.addEventListener('submit', (e) => {
         return;
     }
 
-    const newUser = { username: regUser, password: regPass, pin: regPin };
-    userList.push(newUser);
-    saveToStore('users', newUser).catch(console.error);
-    showToast(`Akun "${regUser}" berhasil dibuat! Silakan masuk 🎉`, 'success', 3000);
-
-    registerForm.reset();
-    registerError.classList.add('hidden');
-    switchAuthTab('login');
+    fetch(`${API_URL}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ username: regUser, password: regPass, pin: regPin })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Akun "${regUser}" berhasil dibuat! Silakan masuk 🎉`, 'success', 3000);
+            registerForm.reset();
+            registerError.classList.add('hidden');
+            switchAuthTab('login');
+        } else {
+            registerError.innerText = data.error || 'Gagal mendaftar!';
+            registerError.classList.remove('hidden');
+            showToast(data.error || 'Gagal mendaftar!', 'error', 3000);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Terjadi kesalahan!', 'error', 3000);
+    });
 });
 
 // Sistem Ganti Password Kustom
@@ -366,7 +375,7 @@ changePasswordForm.addEventListener('submit', (e) => {
 
     fetch(`${API_URL}/api/change-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ username: activeUser, oldPassword: oldPass, newPassword: newPass })
     })
     .then(res => res.json())
@@ -401,6 +410,7 @@ window.handleLogout = function () {
 
             sessionStorage.removeItem('arf_session_active');
             sessionStorage.removeItem('arf_active_user');
+            sessionStorage.removeItem('arf_token');
             showToast('Anda telah logout. Sampai jumpa!', 'info', 2500);
             setTimeout(() => checkAuth(), 300);
         }

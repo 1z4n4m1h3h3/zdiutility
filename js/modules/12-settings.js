@@ -5,7 +5,7 @@ window.openSettingsModal = function () {
     const modal = document.getElementById('settings-modal');
     const modalContent = document.getElementById('settings-modal-content');
 
-    fetch(`${API_URL}/api/settings`)
+    fetch(`${API_URL}/api/settings`, { headers: getAuthHeaders() })
         .then(res => res.json())
         .then(data => {
             if (data.telegramBotToken) document.getElementById('setting-bot-token').value = data.telegramBotToken;
@@ -43,7 +43,7 @@ window.saveSettings = function () {
 
     fetch(`${API_URL}/api/settings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(settings)
     })
         .then(res => res.json())
@@ -64,7 +64,7 @@ window.saveSettings = function () {
 window.sendTelegramNotification = function (message) {
     fetch(`${API_URL}/api/notify`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ message })
     })
         .then(res => res.json())

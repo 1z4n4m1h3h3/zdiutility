@@ -11,6 +11,11 @@ function initDB() {
     return Promise.resolve(); // json-server endpoint sudah diatur di API_URL
 }
 
+function getAuthHeaders() {
+    const token = sessionStorage.getItem('arf_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 async function getAllFromStore(storeName) {
     try {
         const res = await fetch(`${API_URL}/${storeName}?_t=${Date.now()}`, {
@@ -18,7 +23,8 @@ async function getAllFromStore(storeName) {
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
-                'Expires': '0'
+                'Expires': '0',
+                ...getAuthHeaders()
             }
         });
         if (!res.ok) return [];
@@ -40,7 +46,7 @@ async function saveToStore(storeName, item) {
         else if (storeName === 'services') { queryKey = 'id'; queryValue = item.id; }
         else if (storeName === 'borrowings') { queryKey = 'id'; queryValue = item.id; }
 
-        const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${queryValue}&_t=${Date.now()}`, { cache: 'no-store' });
+        const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${queryValue}&_t=${Date.now()}`, { cache: 'no-store', headers: getAuthHeaders() });
         const searchData = await searchRes.json();
 
         if (searchData.length > 0) {
@@ -48,14 +54,14 @@ async function saveToStore(storeName, item) {
             const realId = searchData[0].id;
             await fetch(`${API_URL}/${storeName}/${realId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(item)
             });
         } else {
             // Create
             await fetch(`${API_URL}/${storeName}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(item)
             });
         }
@@ -74,13 +80,14 @@ async function deleteFromStore(storeName, key) {
         else if (storeName === 'services') queryKey = 'id';
         else if (storeName === 'borrowings') queryKey = 'id';
 
-        const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${key}&_t=${Date.now()}`, { cache: 'no-store' });
+        const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${key}&_t=${Date.now()}`, { cache: 'no-store', headers: getAuthHeaders() });
         const searchData = await searchRes.json();
 
         if (searchData.length > 0) {
             const realId = searchData[0].id;
             await fetch(`${API_URL}/${storeName}/${realId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getAuthHeaders()
             });
         }
     } catch (e) {
@@ -92,7 +99,7 @@ async function deleteBulkFromStore(storeName, ids) {
     try {
         await fetch(`${API_URL}/api/bulk_delete/${storeName}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify({ ids })
         });
     } catch (e) {
