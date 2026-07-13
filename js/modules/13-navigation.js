@@ -50,6 +50,18 @@ window.switchMobileTab = function (tabName) {
         else if (tabName === 'borrow') pageTitleEl.textContent = 'Peminjaman Aset';
     }
 
+    // Toggle Total Items topbar widget
+    const topbarStats = document.getElementById('topbar-stats');
+    if (topbarStats) {
+        if (tabName === 'monitor') {
+            topbarStats.classList.remove('hidden');
+            topbarStats.classList.add('flex');
+        } else {
+            topbarStats.classList.remove('flex');
+            topbarStats.classList.add('hidden');
+        }
+    }
+
     // 2. Define panels for each tab
     const panels = {
         monitor: ['filter-panel', 'monitor-panel'],
