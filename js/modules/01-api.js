@@ -8,11 +8,17 @@ const host = window.location.hostname || defaultHost;
 
 // Jika user testing di Live Server (port 5500) atau GitHub Pages, arahkan ke backend lokal
 const isGithub = window.location.hostname.includes('github.io');
-const isLiveServer = window.location.port !== '3000' && window.location.port !== '';
+const currentHost = window.location.hostname;
+const defaultHost = "10.62.38.204"; // Fallback IP
 
-let API_URL;
-if (isFile || isGithub || isLiveServer) {
-    API_URL = `http://${host === '127.0.0.1' || host === 'localhost' || isGithub ? defaultHost : host}:3000`;
+let API_URL = "";
+
+if (isGithub) {
+    API_URL = "http://localhost:3000";
+} else if (isFile) {
+    API_URL = `http://${defaultHost}:3000`;
+} else if (window.location.port !== '3000' && window.location.port !== '') {
+    API_URL = `http://${currentHost}:3000`;
 } else {
     API_URL = window.location.origin;
 }

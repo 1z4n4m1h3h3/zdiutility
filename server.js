@@ -278,7 +278,7 @@ app.post('/api/login', (req, res) => {
     const { username, password, pin } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
     
-    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, row) => {
+    db.get('SELECT * FROM users WHERE username = ? COLLATE NOCASE', [username], async (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(401).json({ error: 'Invalid credentials' });
         
@@ -338,7 +338,7 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/change-password', authenticateToken, (req, res) => {
     const { username, oldPassword, newPassword } = req.body;
-    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, row) => {
+    db.get('SELECT * FROM users WHERE username = ? COLLATE NOCASE', [username], async (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(401).json({ error: 'Invalid credentials' });
         

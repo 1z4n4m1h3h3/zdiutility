@@ -182,6 +182,12 @@ loginForm.addEventListener('submit', async (e) => {
             }
         } catch (e) {
             console.error('Login error:', e);
+            if (loginErrorEl) {
+                loginErrorEl.innerText = 'Koneksi ke server gagal! Pastikan server jalan di port 3000.';
+                loginErrorEl.classList.remove('hidden');
+            }
+            showToast('Koneksi ke server gagal!', 'error', 3000);
+            return;
         }
 
         if (foundUser) {
