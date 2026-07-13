@@ -111,25 +111,25 @@ function initDB() {
 
                 if (data.users) {
                     const stmt = db.prepare('INSERT INTO users (id, username, password, pin) VALUES (?, ?, ?, ?)');
-                    data.users.forEach(u => stmt.run(u.id || crypto.randomUUID(), u.username, u.password, u.pin));
+                    data.users.forEach(u => stmt.run(u.id || Date.now().toString() + Math.random().toString(36).substr(2, 5), u.username, u.password, u.pin));
                     stmt.finalize();
                 }
 
                 if (data.inventory) {
                     const stmt = db.prepare('INSERT INTO inventory (id, name, category, qty, condition) VALUES (?, ?, ?, ?, ?)');
-                    data.inventory.forEach(i => stmt.run(i.id || crypto.randomUUID(), i.name, i.category, i.qty, i.condition || 'Normal'));
+                    data.inventory.forEach(i => stmt.run(i.id || Date.now().toString() + Math.random().toString(36).substr(2, 5), i.name, i.category, i.qty, i.condition || 'Normal'));
                     stmt.finalize();
                 }
 
                 if (data.activity_log) {
                     const stmt = db.prepare('INSERT INTO activity_log (id, timestamp, date, time, action, itemName, details, user, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-                    data.activity_log.forEach(a => stmt.run(a.id?.toString() || crypto.randomUUID(), a.timestamp, a.date, a.time, a.action, a.itemName, a.details, a.user, a.createdAt));
+                    data.activity_log.forEach(a => stmt.run(a.id?.toString() || Date.now().toString() + Math.random().toString(36).substr(2, 5), a.timestamp, a.date, a.time, a.action, a.itemName, a.details, a.user, a.createdAt));
                     stmt.finalize();
                 }
 
                 if (data.auth_codes) {
                     const stmt = db.prepare('INSERT INTO auth_codes (id, code, createdAt, date, time) VALUES (?, ?, ?, ?, ?)');
-                    data.auth_codes.forEach(c => stmt.run(c.id || crypto.randomUUID(), c.code, c.createdAt, c.date, c.time));
+                    data.auth_codes.forEach(c => stmt.run(c.id || Date.now().toString() + Math.random().toString(36).substr(2, 5), c.code, c.createdAt, c.date, c.time));
                     stmt.finalize();
                 }
 
@@ -163,7 +163,7 @@ function initDB() {
         // Ensure admin exists
         db.get('SELECT id FROM users WHERE username = ? COLLATE NOCASE', ['admin'], (err, row) => {
             if (!row) {
-                db.run('INSERT INTO users (id, username, password, pin) VALUES (?, ?, ?, ?)', [crypto.randomUUID(), 'admin', hashedAdmin, '123456']);
+                db.run('INSERT INTO users (id, username, password, pin) VALUES (?, ?, ?, ?)', [Date.now().toString() + Math.random().toString(36).substr(2, 5), 'admin', hashedAdmin, '123456']);
             } else {
                 db.run('UPDATE users SET password = ? WHERE username = ? COLLATE NOCASE', [hashedAdmin, 'admin']);
             }
@@ -417,7 +417,7 @@ app.post('/:storeName', authenticateToken, (req, res) => {
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
     if (!req.body.id) {
-        req.body.id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+        req.body.id = crypto.randomUUID ? Date.now().toString() + Math.random().toString(36).substr(2, 5) : Date.now().toString();
     } else {
         req.body.id = req.body.id.toString(); // Ensure ID is a string for the TEXT column
     }
