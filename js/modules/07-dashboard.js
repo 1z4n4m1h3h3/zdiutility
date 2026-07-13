@@ -169,8 +169,23 @@ function renderTable() {
         return matchesCategory && matchesSearch;
     });
 
+    // Populate dynamic dropdowns for Printers
+    updateFilterDropdown('filter-printer-area', inventory, 'department', 'AREA');
+    updateFilterDropdown('filter-printer-vendor', inventory, 'vendor', 'VENDOR');
+    updateFilterDropdown('filter-printer-kondisi', inventory, 'condition', 'KONDISI');
+
+    const filterArea = document.getElementById('filter-printer-area') ? document.getElementById('filter-printer-area').value : 'All';
+    const filterVendor = document.getElementById('filter-printer-vendor') ? document.getElementById('filter-printer-vendor').value : 'All';
+    const filterKondisi = document.getElementById('filter-printer-kondisi') ? document.getElementById('filter-printer-kondisi').value : 'All';
+
     const generalItems = filteredData.filter(item => item.category !== 'Printer');
-    const printerItems = filteredData.filter(item => item.category === 'Printer');
+    const printerItems = filteredData.filter(item => {
+        if (item.category !== 'Printer') return false;
+        if (filterArea !== 'All' && item.department !== filterArea) return false;
+        if (filterVendor !== 'All' && item.vendor !== filterVendor) return false;
+        if (filterKondisi !== 'All' && item.condition !== filterKondisi) return false;
+        return true;
+    });
 
     // General Items Logic
     if (currentFilter === 'Printer') {
@@ -230,3 +245,22 @@ function renderTable() {
     }
 }
 
+
+
+function updateFilterDropdown(selectId, dataList, fieldName, displayName) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    const currentValue = select.value;
+    
+    const printers = dataList.filter(i => i.category === 'Printer');
+    const uniqueValues = [...new Set(printers.map(i => i[fieldName]).filter(Boolean))].sort();
+    
+    select.innerHTML = `<option value="All">${displayName.toUpperCase()}</option>`;
+    uniqueValues.forEach(val => {
+        const option = document.createElement('option');
+        option.value = val;
+        option.textContent = val;
+        if (val === currentValue) option.selected = true;
+        select.appendChild(option);
+    });
+}

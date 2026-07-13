@@ -34,6 +34,24 @@
             });
         }
     </script>
+
+<style>
+    .custom-select-arrow {
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat;
+        background-position: right 0.2rem top 50%;
+        background-size: 0.65rem auto;
+        padding-right: 1rem;
+    }
+    .custom-select-arrow option {
+        background-color: #0f172a;
+        color: #94a3b8;
+    }
+    .text-center-last {
+        text-align-last: center;
+    }
+</style>
+
 </head>
 
 <body class="bg-[#020617] text-slate-100 min-h-screen p-6 md:p-12 relative overflow-x-clip font-['Plus_Jakarta_Sans']">
@@ -708,9 +726,21 @@
                                 <tr class="border-b border-slate-800 text-slate-400 text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
                                     <th class="p-2 md:p-4 pl-3 md:pl-6 whitespace-nowrap"> Nama Printer </th>
                                     <th class="p-2 md:p-4 text-center whitespace-nowrap"> IP Address </th>
-                                    <th class="p-2 md:p-4 text-center whitespace-nowrap"> Area </th>
-                                    <th class="p-2 md:p-4 text-center whitespace-nowrap"> Vendor </th>
-                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">Kondisi</th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">
+                                        <select id="filter-printer-area" onchange="renderTable()" class="bg-transparent border-none text-slate-400 font-bold uppercase tracking-wider text-[10px] md:text-[11px] focus:outline-none cursor-pointer hover:text-cyan-400 text-center w-full appearance-none custom-select-arrow text-center-last">
+                                            <option value="All">AREA</option>
+                                        </select>
+                                    </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">
+                                        <select id="filter-printer-vendor" onchange="renderTable()" class="bg-transparent border-none text-slate-400 font-bold uppercase tracking-wider text-[10px] md:text-[11px] focus:outline-none cursor-pointer hover:text-cyan-400 text-center w-full appearance-none custom-select-arrow text-center-last">
+                                            <option value="All">VENDOR</option>
+                                        </select>
+                                    </th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">
+                                        <select id="filter-printer-kondisi" onchange="renderTable()" class="bg-transparent border-none text-slate-400 font-bold uppercase tracking-wider text-[10px] md:text-[11px] focus:outline-none cursor-pointer hover:text-cyan-400 text-center w-full appearance-none custom-select-arrow text-center-last">
+                                            <option value="All">KONDISI</option>
+                                        </select>
+                                    </th>
                                     <th class="p-2 md:p-4 text-center whitespace-nowrap">Stok</th>
                                     <th class="p-2 md:p-4 text-center whitespace-nowrap">Aksi</th>
                                 </tr>
@@ -1316,26 +1346,26 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-    <script src="js/modules/01-api.js?v=1783929626"></script>
-    <script src="js/modules/02-activity-log.js?v=1783929626"></script>
-    <script src="js/modules/03-toast.js?v=1783929626"></script>
-    <script src="js/modules/04-modal.js?v=1783929626"></script>
-    <script src="js/modules/05-auth.js?v=1783929626"></script>
-    <script src="js/modules/06-user-management.js?v=1783929626"></script>
-    <script src="js/modules/07-dashboard.js?v=1783929626"></script>
-    <script src="js/modules/08-charts.js?v=1783929626"></script>
-    <script src="js/modules/09-maintenance.js?v=1783929626"></script>
-    <script src="js/modules/10-excel.js?v=1783929626"></script>
-    <script src="js/modules/11-barcode.js?v=1783929626"></script>
-    <script src="js/modules/12-settings.js?v=1783929626"></script>
-    <script src="js/modules/13-navigation.js?v=1783929626"></script>
-    <script src="js/modules/14-sync.js?v=1783929626"></script>
-    <script src="js/modules/15-pwa.js?v=1783929626"></script>
-    <script src="js/modules/16-tracking.js?v=1783929626"></script>
-    <script src="js/modules/17-backup.js?v=1783929626"></script>
-    <script src="js/modules/18-borrowing.js?v=1783929626"></script>
-    <script src="js/modules/19-item-history.js?v=1783929626"></script>
-    <script src="js/modules/20-barcode-printing.js?v=1783929626"></script>
+    <script src="js/modules/01-api.js?v=1783930587"></script>
+    <script src="js/modules/02-activity-log.js?v=1783930587"></script>
+    <script src="js/modules/03-toast.js?v=1783930587"></script>
+    <script src="js/modules/04-modal.js?v=1783930587"></script>
+    <script src="js/modules/05-auth.js?v=1783930587"></script>
+    <script src="js/modules/06-user-management.js?v=1783930587"></script>
+    <script src="js/modules/07-dashboard.js?v=1783930587"></script>
+    <script src="js/modules/08-charts.js?v=1783930587"></script>
+    <script src="js/modules/09-maintenance.js?v=1783930587"></script>
+    <script src="js/modules/10-excel.js?v=1783930587"></script>
+    <script src="js/modules/11-barcode.js?v=1783930587"></script>
+    <script src="js/modules/12-settings.js?v=1783930587"></script>
+    <script src="js/modules/13-navigation.js?v=1783930587"></script>
+    <script src="js/modules/14-sync.js?v=1783930587"></script>
+    <script src="js/modules/15-pwa.js?v=1783930587"></script>
+    <script src="js/modules/16-tracking.js?v=1783930587"></script>
+    <script src="js/modules/17-backup.js?v=1783930587"></script>
+    <script src="js/modules/18-borrowing.js?v=1783930587"></script>
+    <script src="js/modules/19-item-history.js?v=1783930587"></script>
+    <script src="js/modules/20-barcode-printing.js?v=1783930587"></script>
 </body>
 
 </html>

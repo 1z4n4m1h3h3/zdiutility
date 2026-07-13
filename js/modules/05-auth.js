@@ -168,13 +168,14 @@ loginForm.addEventListener('submit', async (e) => {
         // Ambil data terbaru dari server untuk sinkronisasi instan
         let foundUser = null;
         let requirePin = false;
+        let authRes = null;
         try {
             const res = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ username: userInp, password: passInp })
             });
-            const authRes = await res.json();
+            authRes = await res.json();
             if (authRes && authRes.success) {
                 foundUser = authRes.user;
                 requirePin = authRes.requirePin;
@@ -235,13 +236,14 @@ loginForm.addEventListener('submit', async (e) => {
         }
 
         let isValid = false;
+        let authRes = null;
         try {
             const res = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ username: pendingUser.username, pin: codeInp })
             });
-            const authRes = await res.json();
+            authRes = await res.json();
             if (authRes && authRes.success) {
                 isValid = true;
                 pendingUser = authRes.user;
