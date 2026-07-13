@@ -229,11 +229,11 @@
         <!-- SIDEBAR (Khusus Desktop) -->
         <aside class="hidden lg:flex flex-col w-[260px] glass-3d rounded-3xl border border-slate-800/60 h-[calc(100vh-3rem)] p-5 backdrop-blur-md bg-slate-950/80 shadow-lg shrink-0 overflow-y-auto custom-scroll relative z-20">
             <!-- Logo & Title -->
-            <div class="flex items-center gap-3 mb-8 px-2">
-                <img src="Logo.png/Logo.png" class="h-10 w-auto filter hover:brightness-110 drop-shadow-[0_0_15px_rgba(168,85,247,0.45)]">
+            <div class="flex flex-col items-center justify-center text-center gap-3 mb-8 px-2">
+                <img src="Logo.png/Logo.png" class="h-20 w-auto filter hover:brightness-110 drop-shadow-[0_0_15px_rgba(168,85,247,0.45)] transition-transform hover:scale-105">
                 <div>
-                    <h1 class="text-lg font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent leading-none">ZDI Stock</h1>
-                    <p class="text-[9px] text-slate-400 mt-1 uppercase tracking-wider">Utility Panel</p>
+                    <h1 class="text-xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent leading-none">ZDI Stock</h1>
+                    <p class="text-[10px] text-slate-400 mt-1.5 uppercase tracking-wider">Utility Panel</p>
                 </div>
             </div>
 
@@ -302,7 +302,7 @@
         <main class="flex-1 flex flex-col h-[calc(100vh-3rem)] overflow-y-auto custom-scroll w-full relative pb-10">
             
             <!-- Mobile Header (Hidden on Desktop) -->
-            <header class="lg:hidden sticky top-0 z-30 w-full glass-3d px-4 py-3 border-b border-slate-800/60 mb-4 flex items-center justify-between backdrop-blur-md bg-slate-950/80">
+            <header class="lg:hidden sticky top-0 z-30 w-full glass-3d px-4 pt-8 pb-3 border-b border-slate-800/60 mb-4 flex items-center justify-between backdrop-blur-md bg-slate-950/80">
                 <div class="flex items-center gap-3 text-left">
                     <img src="Logo.png/Logo.png" class="h-8 w-auto">
                     <div class="hidden sm:block">
@@ -536,7 +536,7 @@
                                     <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF </button>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto custom-scroll">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider bg-slate-950/50">
@@ -596,7 +596,7 @@
                                 <i class="fa-solid fa-list-ul text-indigo-400"></i> Daftar Aset Dipinjam
                             </h2>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto custom-scroll">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="border-b border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider bg-slate-950/50">
