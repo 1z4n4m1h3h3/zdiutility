@@ -78,6 +78,17 @@ function checkAuth() {
             `;
         }
 
+        const btnSettings = document.getElementById('btn-settings');
+        if (btnSettings) {
+            if (activeUser.toLowerCase() === 'admin') {
+                btnSettings.classList.remove('hidden');
+                btnSettings.classList.add('flex');
+            } else {
+                btnSettings.classList.add('hidden');
+                btnSettings.classList.remove('flex');
+            }
+        }
+
         const mobileDisplayEl = document.getElementById('mobile-active-user-display');
         if (mobileDisplayEl) {
             mobileDisplayEl.innerHTML = `

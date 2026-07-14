@@ -2,19 +2,38 @@
 // EXCEL IMPORT & EXPORT SYSTEM
 // ============================================================
 window.downloadExcelTemplate = function() {
-    const ws = XLSX.utils.json_to_sheet([{
-        "Nama Barang": "Contoh Laptop ROG",
-        "Kategori": "Laptop",
-        "Stok": 10,
-        "Kondisi": "Normal"
-    }, {
-        "Nama Barang": "Contoh Kabel LAN",
-        "Kategori": "Consumable",
-        "Stok": 50,
-        "Kondisi": "Baru"
-    }]);
+    // Sheet 1: Aset Umum
+    const wsUmumData = [
+        ["PANDUAN PENGISIAN ASET UMUM:"],
+        ["- Kategori wajib diisi salah satu dari: PC, Laptop, Monitor, CCTV, Doorlock, Consumable"],
+        ["- Stok wajib berupa angka."],
+        ["- Kondisi bisa diisi: Normal, Rusak, Sedang Servis, dsb."],
+        [],
+        ["Nama Barang", "Kategori", "Stok", "Kondisi"],
+        ["Contoh Laptop ROG", "Laptop", 10, "Normal"],
+        ["Contoh Kabel LAN", "Consumable", 50, "Baru"],
+        ["Monitor Samsung 24", "Monitor", 5, "Normal"]
+    ];
+    const wsUmum = XLSX.utils.aoa_to_sheet(wsUmumData);
+    wsUmum['!cols'] = [{wch: 30}, {wch: 15}, {wch: 10}, {wch: 15}];
+    
+    // Sheet 2: Printer Spesifik
+    const wsPrinterData = [
+        ["PANDUAN PENGISIAN PRINTER:"],
+        ["- NAMA PRINTER wajib diisi."],
+        ["- VENDOR, IP PRINTER, dan DEPARTEMENT bersifat opsional tapi sangat disarankan."],
+        [],
+        ["NAMA PRINTER", "VENDOR", "IP PRINTER", "DEPARTEMENT"],
+        ["HP LaserJet Pro M404n", "MSTEK", "192.168.1.100", "HRD"],
+        ["Epson L3110", "INKNARA", "USB", "Finance"],
+        ["Konica Minolta Bizhub", "KOINK", "192.168.1.105", "Operation"]
+    ];
+    const wsPrinter = XLSX.utils.aoa_to_sheet(wsPrinterData);
+    wsPrinter['!cols'] = [{wch: 30}, {wch: 15}, {wch: 15}, {wch: 20}];
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template_Assets");
+    XLSX.utils.book_append_sheet(wb, wsUmum, "Format_Aset_Umum");
+    XLSX.utils.book_append_sheet(wb, wsPrinter, "Format_Printer");
     XLSX.writeFile(wb, "Template_Import_Assets.xlsx");
 }
 

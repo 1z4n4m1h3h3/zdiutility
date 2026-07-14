@@ -685,13 +685,8 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full xl:w-auto justify-start xl:justify-end">
-                            <button onclick="openSettingsModal()" class="btn-action-3d h-8 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer border border-slate-700/60 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
+                            <button id="btn-settings" onclick="openSettingsModal()" class="hidden btn-action-3d h-8 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white items-center justify-center cursor-pointer border border-slate-700/60 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
                                 <i class="fa-solid fa-gear sm:mr-1.5"></i> <span class="hidden sm:inline">Pengaturan</span> </button>
-                            <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="handleImportExcel(event)">
-                            <button onclick="document.getElementById('import-excel-file').click()" class="btn-action-3d h-8 px-3 rounded-lg bg-blue-950/40 hover:bg-blue-600 text-blue-400 hover:text-white flex items-center justify-center cursor-pointer border border-blue-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
-                                <i class="fa-solid fa-file-import sm:mr-1.5"></i> <span class="hidden sm:inline">Import</span> </button>
-                            <button onclick="exportToExcel()" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
-                                <i class="fa-solid fa-file-excel sm:mr-1.5"></i> <span class="hidden sm:inline">Export</span> </button>
                             <button onclick="openModal('modal-export-inv')" class="btn-action-3d h-8 px-3 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm flex-1 sm:flex-none">
                                 <i class="fa-solid fa-file-pdf sm:mr-1.5"></i> <span class="hidden sm:inline">Cetak PDF</span> </button>
                             <span class="flex h-3 w-3 relative hidden sm:flex">
