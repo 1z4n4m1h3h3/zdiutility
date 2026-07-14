@@ -412,48 +412,66 @@ app.get('/:storeName', authenticateToken, (req, res) => {
 });
 
 // POST endpoint
-app.post('/:storeName', authenticateToken, (req, res) => {
+app.post('/:storeName', authenticateToken, async (req, res) => {
     const { storeName } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
-    if (!req.body.id) {
-        req.body.id = crypto.randomUUID ? Date.now().toString() + Math.random().toString(36).substr(2, 5) : Date.now().toString();
+    let body = { ...req.body };
+
+    if (!body.id) {
+        body.id = crypto.randomUUID ? Date.now().toString() + Math.random().toString(36).substr(2, 5) : Date.now().toString();
     } else {
-        req.body.id = req.body.id.toString(); // Ensure ID is a string for the TEXT column
+        body.id = body.id.toString(); // Ensure ID is a string for the TEXT column
     }
 
-    const keys = Object.keys(req.body);
-    const values = Object.values(req.body);
+    if (storeName === 'users' && body.password) {
+        // Hanya hash jika belum berbentuk hash bcrypt
+        if (!body.password.startsWith('$2') || body.password.length !== 60) {
+            body.password = await bcrypt.hash(body.password, 10);
+        }
+    }
+
+    const keys = Object.keys(body);
+    const values = Object.values(body);
     const placeholders = keys.map(() => '?').join(', ');
 
     const query = `INSERT INTO ${storeName} (${keys.join(', ')}) VALUES (${placeholders})`;
 
     db.run(query, values, function (err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json(req.body);
+        res.status(201).json(body);
     });
 });
 
 // PUT endpoint
-app.put('/:storeName/:id', authenticateToken, (req, res) => {
+app.put('/:storeName/:id', authenticateToken, async (req, res) => {
     const { storeName, id } = req.params;
     if (!tables.includes(storeName)) return res.status(404).json({ error: 'Not found' });
 
-    const keys = Object.keys(req.body).filter(k => k !== 'id');
-    const values = keys.map(k => req.body[k]);
+    let body = { ...req.body };
+
+    if (storeName === 'users' && body.password) {
+        // Hanya hash jika belum berbentuk hash bcrypt
+        if (!body.password.startsWith('$2') || body.password.length !== 60) {
+            body.password = await bcrypt.hash(body.password, 10);
+        }
+    }
+
+    const keys = Object.keys(body).filter(k => k !== 'id');
+    const values = keys.map(k => body[k]);
     const setClause = keys.map(k => `${k} = ?`).join(', ');
 
     values.push(id.toString());
 
     if (keys.length === 0) {
-        return res.json(req.body);
+        return res.json(body);
     }
 
     const query = `UPDATE ${storeName} SET ${setClause} WHERE id = ?`;
 
     db.run(query, values, function (err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(req.body);
+        res.json(body);
     });
 });
 
