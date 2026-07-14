@@ -67,21 +67,30 @@ async function saveToStore(storeName, item) {
         if (searchData.length > 0) {
             // Update
             const realId = searchData[0].id;
-            await fetch(`${API_URL}/${storeName}/${realId}`, {
+            const res = await fetch(`${API_URL}/${storeName}/${realId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(item)
             });
+            if (!res.ok) {
+                const errData = await res.json();
+                alert(`Gagal Update ${storeName}: ${errData.error || res.statusText}`);
+            }
         } else {
             // Create
-            await fetch(`${API_URL}/${storeName}`, {
+            const res = await fetch(`${API_URL}/${storeName}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(item)
             });
+            if (!res.ok) {
+                const errData = await res.json();
+                alert(`Gagal Simpan ${storeName}: ${errData.error || res.statusText}`);
+            }
         }
     } catch (e) {
         console.error(`Gagal menyimpan data ke ${storeName}:`, e);
+        alert(`Error Sistem Saat Simpan ke ${storeName}: ${e.message}`);
     }
 }
 
