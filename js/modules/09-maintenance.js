@@ -47,6 +47,7 @@ function renderServicesTable() {
             <td class="p-4 pl-4 font-bold text-orange-400 whitespace-nowrap">${svc.itemName}</td>
             <td class="p-4 text-slate-300 flex items-center gap-2"><i class="fa-solid fa-location-dot text-slate-500"></i> ${svc.location}</td>
             <td class="p-4 text-slate-400 text-xs tracking-wider">Rp ${parseInt(svc.estCost).toLocaleString('id-ID')}</td>
+            <td class="p-4 font-bold text-slate-400">${svc.sendDate || '-'}</td>
             <td class="p-4 font-bold text-amber-400">${svc.completionDate}</td>
             <td class="p-4 text-right">
                 <button onclick="finishService('${svc.id}')" class="btn-action-3d h-8 px-4 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm ml-auto">
@@ -85,6 +86,7 @@ if (maintenanceForm) {
         const itemId = document.getElementById('svc-item').value;
         const location = document.getElementById('svc-location').value;
         const cost = document.getElementById('svc-cost').value;
+        const sendDateStr = document.getElementById('svc-send-date').value;
         const dateStr = document.getElementById('svc-date').value;
 
         if (!itemId) {
@@ -106,7 +108,9 @@ if (maintenanceForm) {
             itemName: invItem.name,
             location: location,
             estCost: parseInt(cost),
+            sendDate: sendDateStr,
             completionDate: dateStr,
+            status: 'in_progress',
             createdAt: Date.now()
         };
 

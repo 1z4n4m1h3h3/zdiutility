@@ -37,6 +37,7 @@ window.renderBorrowingsTable = function () {
             <td class="p-4 font-semibold text-white whitespace-nowrap">${b.itemName}</td>
             <td class="p-4 text-slate-300 whitespace-nowrap"><i class="fa-solid fa-user-tag text-xs text-slate-500 mr-1.5"></i>${b.borrower}</td>
             <td class="p-4 text-slate-300 whitespace-nowrap">${b.dateBorrowed}</td>
+            <td class="p-4 font-bold text-slate-400 whitespace-nowrap">${b.dateReturn || '-'}</td>
             <td class="p-4 text-right">
                 <button onclick="finishBorrow('${b.id}')" class="btn-action-3d h-8 px-4 rounded-xl bg-indigo-950/40 hover:bg-indigo-600 text-indigo-400 hover:text-white flex items-center justify-center cursor-pointer border border-indigo-900/30 transition-colors text-xs font-bold shadow-sm ml-auto">
                     Kembalikan
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemId = document.getElementById('borrow-item').value;
             const borrower = document.getElementById('borrow-name').value.trim();
             const dateBorrowed = document.getElementById('borrow-date').value;
+            const dateReturn = document.getElementById('borrow-return-date').value;
 
             if (!itemId) {
                 showToast('Pilih barang yang mau dipinjam!', 'warning');
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemName: item.name,
                 borrower: borrower,
                 dateBorrowed: dateBorrowed,
+                dateReturn: dateReturn,
                 createdAt: Date.now()
             };
 
