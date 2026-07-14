@@ -109,6 +109,8 @@ function checkAuth() {
         updateDashboard();
         renderServicesTable();
         renderSvcItemDropdown();
+        if (typeof renderBorrowItemDropdown === 'function') renderBorrowItemDropdown();
+        if (typeof renderBorrowingsTable === 'function') renderBorrowingsTable();
 
         if (window.innerWidth < 1024) {
             // Default to 'monitor' tab on mobile load

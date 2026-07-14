@@ -20,7 +20,7 @@ function checkLowStock() {
     const lowStockList = document.getElementById('low-stock-list');
     if (!lowStockWidget || !lowStockList) return;
 
-    const lowItems = inventory.filter(item => item.qty <= 5);
+    const lowItems = inventory.filter(item => item.qty <= 5 && item.category !== 'Printer');
 
     if (lowItems.length > 0) {
         lowStockWidget.classList.remove('hidden');

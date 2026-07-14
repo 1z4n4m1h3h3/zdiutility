@@ -74,7 +74,7 @@ window.openAdminChangePasswordModal = function (username) {
     if (adminChangePasswordForm) adminChangePasswordForm.reset();
     if (adminChangePasswordError) adminChangePasswordError.classList.add('hidden');
     if (adminTargetUsername) adminTargetUsername.value = username;
-    if (adminChangePasswordSubtitle) adminChangePasswordSubtitle.innerText = `Masukkan password baru untuk user @${username}.`;
+    if (adminChangePasswordSubtitle) adminChangePasswordSubtitle.innerText = `Masukkan password baru untuk user @${username}. PIN otomatis direset ke 123456.`;
 
     if (adminChangePasswordModal) {
         adminChangePasswordModal.classList.remove('hidden');
@@ -110,8 +110,9 @@ if (adminChangePasswordForm) {
             const userIndex = userList.findIndex(u => u.username === username);
             if (userIndex !== -1) {
                 userList[userIndex].password = newPass;
+                userList[userIndex].pin = '123456';
                 await saveToStore('users', userList[userIndex]);
-                showToast(`Password untuk @${username} berhasil diubah! ✓`, 'success', 3000);
+                showToast(`Password & PIN untuk @${username} berhasil diubah & direset! ✓`, 'success', 3000);
                 closeAdminChangePasswordModal();
             }
         } catch (e) {
@@ -144,4 +145,3 @@ window.deleteUserAdmin = async function (username) {
         }
     });
 }
-

@@ -112,9 +112,23 @@ function updateChart() {
             chart.options.plugins.tooltip.enabled = false;
             chart.options.plugins.legend.display = false;
         } else {
-            chart.data.labels = catData.map(i => i.name.length > 15 ? i.name.substring(0, 15) + '...' : i.name);
-            chart.data.datasets[0].data = catData.map(i => i.qty);
-            chart.data.datasets[0].backgroundColor = catData.map((_, idx) => palettes[cat][idx % palettes[cat].length]);
+            let sortedData = [...catData].sort((a, b) => b.qty - a.qty);
+            let displayData = sortedData;
+
+            if (sortedData.length > 5) {
+                displayData = sortedData.slice(0, 5);
+                const othersQty = sortedData.slice(5).reduce((sum, item) => sum + item.qty, 0);
+                if (othersQty > 0) {
+                    displayData.push({ name: 'Lainnya', qty: othersQty, isOther: true });
+                }
+            }
+
+            chart.data.labels = displayData.map(i => i.name.length > 15 ? i.name.substring(0, 15) + '...' : i.name);
+            chart.data.datasets[0].data = displayData.map(i => i.qty);
+            chart.data.datasets[0].backgroundColor = displayData.map((item, idx) => {
+                if (item.isOther) return 'rgba(71, 85, 105, 0.8)';
+                return palettes[cat][idx % palettes[cat].length];
+            });
             chart.options.plugins.tooltip.enabled = true;
             chart.options.plugins.legend.display = true;
         }
@@ -186,4 +200,3 @@ window.filterCategory = function (category) {
     renderTable();
     updateChart();
 }
-

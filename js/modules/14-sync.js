@@ -8,6 +8,7 @@ async function syncData() {
             const newLogs = await getAllFromStore('activity_log');
             const newUsers = await getAllFromStore('users');
             const newMaintenance = await getAllFromStore('services');
+            const newBorrowings = await getAllFromStore('borrowings');
 
             // Sort logs
             newLogs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -35,11 +36,17 @@ async function syncData() {
                 updateDashboard();
                 updateChart();
                 renderSvcItemDropdown();
+                if (typeof renderBorrowItemDropdown === 'function') renderBorrowItemDropdown();
             }
 
             if (JSON.stringify(maintenanceList) !== JSON.stringify(newMaintenance)) {
                 maintenanceList = newMaintenance;
                 renderServicesTable();
+            }
+
+            if (JSON.stringify(borrowingsList) !== JSON.stringify(newBorrowings)) {
+                borrowingsList = newBorrowings;
+                if (typeof renderBorrowingsTable === 'function') renderBorrowingsTable();
             }
         } catch (e) {
             // fail silently on network issues during polling
@@ -49,4 +56,3 @@ async function syncData() {
 
 // Start polling every 3 seconds for real-time feel
 setInterval(syncData, 3000);
-

@@ -399,6 +399,7 @@ if (form) {
 
         updateDashboard();
         renderSvcItemDropdown();
+        if (typeof renderBorrowItemDropdown === 'function') renderBorrowItemDropdown();
     });
 }
 
