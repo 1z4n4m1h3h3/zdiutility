@@ -49,13 +49,31 @@ window.renderBorrowingsTable = function () {
     // Update Summary Badges
     const summaryDiv = document.getElementById('borrow-summary');
     if (summaryDiv) {
-        if (borrowingsList.length > 0) {
-            summaryDiv.innerHTML = `
-                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Dipinjam:</span>
-                    <span class="text-xs font-black text-white">${borrowingsList.length} Barang</span>
-                </div>
-            `;
+        let totalReturned = parseInt(localStorage.getItem('arf_total_returned') || '0');
+        
+        if (borrowingsList.length > 0 || totalReturned > 0) {
+            const itemNames = borrowingsList.map(b => b.itemName).join(', ');
+            let html = '';
+            
+            if (borrowingsList.length > 0) {
+                html += `
+                    <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2 max-w-2xl">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Total Dipinjam:</span>
+                        <span class="text-xs font-black text-white truncate" title="${itemNames}">${borrowingsList.length} Barang (${itemNames})</span>
+                    </div>
+                `;
+            }
+            
+            if (totalReturned > 0) {
+                html += `
+                    <div class="px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/50 flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider whitespace-nowrap">Total Dikembalikan:</span>
+                        <span class="text-xs font-black text-emerald-400 whitespace-nowrap">${totalReturned} Barang</span>
+                    </div>
+                `;
+            }
+            
+            summaryDiv.innerHTML = html;
         } else {
             summaryDiv.innerHTML = '';
         }
@@ -135,6 +153,10 @@ window.finishBorrow = async function (id) {
             // Delete borrowing record
             await deleteFromStore('borrowings', b.id);
             borrowingsList.splice(bIndex, 1);
+
+            // Increment total returned counter
+            let totalReturned = parseInt(localStorage.getItem('arf_total_returned') || '0');
+            localStorage.setItem('arf_total_returned', totalReturned + 1);
 
             addToActivityLog('EDIT_QUANTITY', b.itemName, `Aset dikembalikan oleh ${b.borrower}. Stok +1`);
 

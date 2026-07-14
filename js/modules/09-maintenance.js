@@ -61,14 +61,15 @@ function renderServicesTable() {
     const summaryDiv = document.getElementById('service-summary');
     if (summaryDiv) {
         if (maintenanceList.length > 0) {
+            const itemNames = maintenanceList.map(s => s.itemName).join(', ');
             summaryDiv.innerHTML = `
-                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Servis:</span>
-                    <span class="text-xs font-black text-white">${maintenanceList.length}</span>
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2 max-w-2xl">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Total Servis:</span>
+                    <span class="text-xs font-black text-white truncate" title="${itemNames}">${maintenanceList.length} Unit (${itemNames})</span>
                 </div>
                 <div class="px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/50 flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider">Total Biaya:</span>
-                    <span class="text-xs font-black text-emerald-400">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
+                    <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider whitespace-nowrap">Total Biaya:</span>
+                    <span class="text-xs font-black text-emerald-400 whitespace-nowrap">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
                 </div>
             `;
         } else {
