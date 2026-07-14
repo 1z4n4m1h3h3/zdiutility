@@ -119,6 +119,7 @@ function checkAuth() {
         }
         updateDashboard();
         renderServicesTable();
+        if (typeof renderReport === 'function') renderReport();
         renderSvcItemDropdown();
         if (typeof renderBorrowItemDropdown === 'function') renderBorrowItemDropdown();
         if (typeof renderBorrowingsTable === 'function') renderBorrowingsTable();

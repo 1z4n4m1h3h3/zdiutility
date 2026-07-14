@@ -30,7 +30,18 @@ function renderServicesTable() {
 
     servicesTableBody.innerHTML = '';
 
-    if (maintenanceList.length === 0) {
+    const filterLocation = document.getElementById('filter-svc-location')?.value.toLowerCase() || '';
+    const filterStatus = document.getElementById('filter-svc-status')?.value || '';
+    const filterDate = document.getElementById('filter-svc-date')?.value || '';
+
+    const filteredServices = maintenanceList.filter(svc => {
+        const matchesLocation = !filterLocation || (svc.location && svc.location.toLowerCase().includes(filterLocation));
+        const matchesStatus = !filterStatus || svc.status === filterStatus;
+        const matchesDate = !filterDate || svc.sendDate === filterDate;
+        return matchesLocation && matchesStatus && matchesDate;
+    });
+
+    if (filteredServices.length === 0) {
         if (servicesEmptyState) servicesEmptyState.classList.remove('hidden');
         return;
     }
@@ -39,7 +50,7 @@ function renderServicesTable() {
 
     let totalBiaya = 0;
 
-    maintenanceList.forEach(svc => {
+    filteredServices.forEach(svc => {
         totalBiaya += parseInt(svc.estCost) || 0;
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/20 text-sm transition-colors';
@@ -49,6 +60,9 @@ function renderServicesTable() {
             <td class="p-4 text-slate-400 text-xs tracking-wider">Rp ${parseInt(svc.estCost).toLocaleString('id-ID')}</td>
             <td class="p-4 font-bold text-slate-400">${svc.sendDate || '-'}</td>
             <td class="p-4 font-bold text-amber-400">${svc.completionDate}</td>
+            <td class="p-4 whitespace-nowrap">
+                ${svc.attachment ? `<a href="${API_URL}${svc.attachment}" target="_blank" class="text-cyan-400 hover:text-cyan-300 text-[10px] uppercase font-bold flex items-center gap-1"><i class="fa-solid fa-image"></i> Lihat</a>` : '-'}
+            </td>
             <td class="p-4 text-right">
                 <button onclick="finishService('${svc.id}')" class="btn-action-3d h-8 px-4 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm ml-auto">
                     <i class="fa-solid fa-check mr-1.5"></i> Selesai
@@ -88,6 +102,7 @@ if (maintenanceForm) {
         const cost = document.getElementById('svc-cost').value;
         const sendDateStr = document.getElementById('svc-send-date').value;
         const dateStr = document.getElementById('svc-date').value;
+        const attachmentFile = document.getElementById('svc-attachment').files[0];
 
         if (!itemId) {
             showToast('Pilih barang terlebih dahulu!', 'warning');
@@ -102,14 +117,34 @@ if (maintenanceForm) {
         await saveToStore('inventory', invItem);
         addToActivityLog('MAINTENANCE_OUT', invItem.name, `Dikirim ke servis di ${location} (Stok dikurangi 1)`);
 
+        // Handle file upload
+        let attachmentUrl = null;
+        if (attachmentFile) {
+            const formData = new FormData();
+            formData.append('attachment', attachmentFile);
+            try {
+                const res = await fetch(`${API_URL}/api/upload`, {
+                    method: 'POST',
+                    headers: { ...getAuthHeaders() },
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) attachmentUrl = data.url;
+            } catch (e) {
+                console.error('File upload failed:', e);
+            }
+        }
+
         const newService = {
-            id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
             itemId: invItem.id,
             itemName: invItem.name,
             location: location,
             estCost: parseInt(cost),
             sendDate: sendDateStr,
             completionDate: dateStr,
+            attachment: attachmentUrl,
+            reminderSent: 0,
             status: 'in_progress',
             createdAt: Date.now()
         };
@@ -122,6 +157,7 @@ if (maintenanceForm) {
         }
 
         renderServicesTable();
+        if (typeof renderReport === 'function') renderReport();
         updateDashboard();
         renderSvcItemDropdown(); // Update opsi dropdown karena stok berkurang
 
@@ -150,6 +186,7 @@ window.finishService = async function (id) {
     await deleteFromStore('services', id);
 
     renderServicesTable();
+    if (typeof renderReport === 'function') renderReport();
     updateDashboard();
     renderSvcItemDropdown();
     showToast(`Servis "${svc.itemName}" telah selesai! Stok dikembalikan.`, 'success', 3000);

@@ -6,6 +6,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const https = require('https');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'zdi-stock-utility-super-secret-key';
 
@@ -15,6 +17,19 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 const db = new sqlite3.Database('./database.sqlite', (err) => {
     if (err) {
@@ -102,6 +117,16 @@ function initDB() {
             dateBorrowed TEXT,
             createdAt INTEGER
         )`);
+
+        // Migration for advanced features
+        db.run(`ALTER TABLE borrowings ADD COLUMN dateReturn TEXT`, () => {});
+        db.run(`ALTER TABLE borrowings ADD COLUMN reminderSent INTEGER DEFAULT 0`, () => {});
+        db.run(`ALTER TABLE borrowings ADD COLUMN attachment TEXT`, () => {});
+        
+        db.run(`ALTER TABLE services ADD COLUMN sendDate TEXT`, () => {});
+        db.run(`ALTER TABLE services ADD COLUMN reminderSent INTEGER DEFAULT 0`, () => {});
+        db.run(`ALTER TABLE services ADD COLUMN attachment TEXT`, () => {});
+        db.run(`ALTER TABLE services ADD COLUMN status TEXT DEFAULT 'in_progress'`, () => {});
 
         // Migrate data from db.json if database is empty
         db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
@@ -514,8 +539,67 @@ app.delete('/:storeName/:id', authenticateToken, (req, res) => {
     });
 });
 
+// File upload endpoint
+app.post('/api/upload', authenticateToken, upload.single('attachment'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+    // Return the URL for the uploaded file
+    res.json({ success: true, url: `/uploads/${req.file.filename}` });
+});
+
+// Auto-Reminder Cron Job (Runs every 1 hour)
+setInterval(() => {
+    db.get("SELECT value FROM settings WHERE key = 'telegramBotToken'", [], (err, tokenRow) => {
+        if (!tokenRow) return;
+        db.get("SELECT value FROM settings WHERE key = 'telegramChatId'", [], (err, chatRow) => {
+            if (!chatRow) return;
+            const token = tokenRow.value;
+            const chatId = chatRow.value;
+
+            // Check overdue borrowings
+            const today = new Date().toISOString().split('T')[0];
+            db.all("SELECT * FROM borrowings WHERE dateReturn < ? AND reminderSent = 0", [today], (err, rows) => {
+                if (rows && rows.length > 0) {
+                    rows.forEach(b => {
+                        const msg = `⚠️ *PENGINGAT PEMINJAMAN*\n\nBarang: *${b.itemName}*\nPeminjam: *${b.borrower}*\nBatas Kembali: *${b.dateReturn}*\n\nStatus: *OVERDUE / TELAT*`;
+                        sendTelegramDirect(token, chatId, msg);
+                        db.run("UPDATE borrowings SET reminderSent = 1 WHERE id = ?", [b.id]);
+                    });
+                }
+            });
+
+            // Check nearing completion services (due today or overdue)
+            db.all("SELECT * FROM services WHERE completionDate <= ? AND status = 'in_progress' AND reminderSent = 0", [today], (err, rows) => {
+                if (rows && rows.length > 0) {
+                    rows.forEach(s => {
+                        const msg = `🔧 *PENGINGAT SERVIS*\n\nBarang: *${s.itemName}*\nLokasi: *${s.location}*\nEstimasi Selesai: *${s.completionDate}*\n\nStatus: *CEK SEKARANG*`;
+                        sendTelegramDirect(token, chatId, msg);
+                        db.run("UPDATE services SET reminderSent = 1 WHERE id = ?", [s.id]);
+                    });
+                }
+            });
+        });
+    });
+}, 3600000); // 1 hour
+
+function sendTelegramDirect(token, chatId, message) {
+    const data = JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' });
+    const options = {
+        hostname: 'api.telegram.org',
+        port: 443,
+        path: `/bot${token}/sendMessage`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
+    };
+    const req = https.request(options, () => {});
+    req.on('error', () => {});
+    req.write(data);
+    req.end();
+}
+
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Express SQLite server running on http://0.0.0.0:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
 
 // Setup HTTPS for mobile camera access

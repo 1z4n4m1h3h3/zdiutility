@@ -292,6 +292,12 @@
                     </div>
                     <span>Aset Printer</span>
                 </button>
+                <button onclick="switchMobileTab('report')" id="side-nav-report" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <span>Laporan Keuangan</span>
+                </button>
                 <button onclick="installPWA()" id="side-nav-install" class="sidebar-nav-btn w-full hidden items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all text-left group shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-white group-hover:scale-110 transition-all">
                         <i class="fa-solid fa-download"></i>
@@ -522,10 +528,15 @@
                         <form id="maintenance-form" class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">PILIH BARANG (RUSAK)</label>
-                                <select id="svc-item" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
-                                    <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang Rusak</option>
-                                    <!-- Injected via JS -->
-                                </select>
+                                <div class="flex gap-2">
+                                    <select id="svc-item" required class="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                        <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang Rusak</option>
+                                        <!-- Injected via JS -->
+                                    </select>
+                                    <button type="button" onclick="openScanner('svc-item')" class="btn-3d px-4 rounded-xl bg-purple-900/40 hover:bg-purple-600 text-purple-400 hover:text-white flex items-center justify-center transition-colors border border-purple-800/30" title="Scan QR Code">
+                                        <i class="fa-solid fa-qrcode text-lg"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">LOKASI SERVIS</label>
@@ -543,7 +554,11 @@
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">ESTIMASI SELESAI</label>
                                 <input type="date" id="svc-date" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] [color-scheme:dark]">
                             </div>
-                            <button type="submit" class="btn-3d w-full mt-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-500/20">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">LAMPIRAN / FOTO KONDISI</label>
+                                <input type="file" id="svc-attachment" accept="image/*" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <button type="submit" id="btn-submit-svc" class="btn-3d w-full mt-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-orange-500/20">
                                 <i class="fa-solid fa-truck-fast"></i> KIRIM SERVIS
                             </button>
                         </form>
@@ -562,7 +577,16 @@
                                     <i class="fa-solid fa-file-pdf mr-1.5"></i> PDF </button>
                             </div>
                         </div>
-                        <div id="service-summary" class="flex flex-wrap gap-2 mb-3"></div>
+                          <div class="flex flex-col md:flex-row gap-3 mb-4">
+                              <input type="text" id="filter-svc-location" placeholder="Cari Lokasi Servis..." class="w-full md:w-1/3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" oninput="renderServicesTable()">
+                              <select id="filter-svc-status" class="w-full md:w-1/4 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 cursor-pointer" onchange="renderServicesTable()">
+                                  <option value="">Semua Status</option>
+                                  <option value="in_progress">Proses Servis</option>
+                                  <option value="completed">Selesai</option>
+                              </select>
+                              <input type="date" id="filter-svc-date" class="w-full md:w-1/4 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]" onchange="renderServicesTable()">
+                          </div>
+                          <div id="service-summary" class="flex flex-wrap gap-2 mb-3"></div>
                         <div class="overflow-x-auto custom-scroll">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -572,6 +596,7 @@
                                         <th class="p-4 whitespace-nowrap">BIAYA EST.</th>
                                         <th class="p-4 whitespace-nowrap">TGL KIRIM</th>
                                         <th class="p-4 whitespace-nowrap">TGL SELESAI</th>
+                                        <th class="p-4 whitespace-nowrap">BUKTI</th>
                                         <th class="p-4 whitespace-nowrap text-right">AKSI</th>
                                     </tr>
                                 </thead>
@@ -598,10 +623,15 @@
                         <form id="borrow-form" class="space-y-4">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">PILIH BARANG ASET</label>
-                                <select id="borrow-item" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
-                                    <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang yang Mau Dipinjam</option>
-                                    <!-- Injected via JS -->
-                                </select>
+                                <div class="flex gap-2">
+                                    <select id="borrow-item" required class="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                        <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Barang yang Mau Dipinjam</option>
+                                        <!-- Injected via JS -->
+                                    </select>
+                                    <button type="button" onclick="openScanner('borrow-item')" class="btn-3d px-4 rounded-xl bg-purple-900/40 hover:bg-purple-600 text-purple-400 hover:text-white flex items-center justify-center transition-colors border border-purple-800/30" title="Scan QR Code">
+                                        <i class="fa-solid fa-qrcode text-lg"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">NAMA PEMINJAM / TEKNISI</label>
@@ -617,7 +647,11 @@
                                     <input type="date" id="borrow-return-date" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] [color-scheme:dark]">
                                 </div>
                             </div>
-                            <button type="submit" class="btn-3d w-full mt-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">LAMPIRAN / FOTO KONDISI</label>
+                                <input type="file" id="borrow-attachment" accept="image/*" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                            </div>
+                            <button type="submit" id="btn-submit-borrow" class="btn-3d w-full mt-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-500/20">
                                 <i class="fa-solid fa-hand-holding-hand"></i> PINJAMKAN
                             </button>
                         </form>
@@ -630,7 +664,11 @@
                                 <i class="fa-solid fa-list-ul text-indigo-400"></i> Daftar Aset Dipinjam
                             </h2>
                         </div>
-                        <div id="borrow-summary" class="flex flex-wrap gap-2 mb-3"></div>
+                          <div class="flex flex-col md:flex-row gap-3 mb-4">
+                              <input type="text" id="filter-borrow-name" placeholder="Cari Nama Peminjam..." class="w-full md:w-1/3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" oninput="renderBorrowingsTable()">
+                              <input type="date" id="filter-borrow-date" class="w-full md:w-1/3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]" onchange="renderBorrowingsTable()">
+                          </div>
+                          <div id="borrow-summary" class="flex flex-wrap gap-2 mb-3"></div>
                         <div class="overflow-x-auto custom-scroll">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -639,6 +677,7 @@
                                         <th class="p-4 whitespace-nowrap">PEMINJAM</th>
                                         <th class="p-4 whitespace-nowrap">TGL PINJAM</th>
                                         <th class="p-4 whitespace-nowrap">TGL KEMBALI</th>
+                                        <th class="p-4 whitespace-nowrap">BUKTI</th>
                                         <th class="p-4 whitespace-nowrap text-right">AKSI</th>
                                     </tr>
                                 </thead>
@@ -725,6 +764,7 @@
                                     <th class="p-2 md:p-5 text-center whitespace-nowrap">Peruntukan</th>
                                     <th class="p-2 md:p-5 text-center whitespace-nowrap">Kondisi</th>
                                     <th class="p-2 md:p-5 text-center whitespace-nowrap">Jumlah Stok</th>
+                                    <th class="p-2 md:p-5 text-center whitespace-nowrap">QR</th>
                                     <th class="p-2 md:p-5 text-center whitespace-nowrap">Aksi Real-Time</th>
                                 </tr>
                             </thead>
@@ -736,6 +776,49 @@
                     <div id="empty-state" class="p-16 text-center hidden">
                         <div class="text-slate-700 text-6xl mb-4"><i class="fa-solid fa-inbox"></i></div>
                         <p class="text-slate-400 text-sm font-medium">Tidak ada item dalam kategori ini.</p>
+                    </div>
+                </div>
+
+                <!-- PANEL LAPORAN KEUANGAN -->
+                <div id="report-panel" class="glass-3d rounded-3xl border border-slate-800/60 transition-colors hidden space-y-6" style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-amber-400"></i> Laporan Keuangan Servis
+                            </h2>
+                            <div class="flex gap-2">
+                                <select id="report-year" onchange="renderReport()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 cursor-pointer">
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026" selected>2026</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                                <div class="absolute -right-4 -bottom-4 text-emerald-500/10 group-hover:scale-110 transition-transform"><i class="fa-solid fa-sack-dollar text-7xl"></i></div>
+                                <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 z-10">Total Biaya (Tahun Ini)</span>
+                                <span class="text-emerald-400 text-2xl font-black z-10" id="report-total-year">Rp 0</span>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                                <div class="absolute -right-4 -bottom-4 text-cyan-500/10 group-hover:scale-110 transition-transform"><i class="fa-solid fa-money-bill-wave text-7xl"></i></div>
+                                <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 z-10">Total Biaya (Bulan Ini)</span>
+                                <span class="text-cyan-400 text-2xl font-black z-10" id="report-total-month">Rp 0</span>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden group">
+                                <div class="absolute -right-4 -bottom-4 text-amber-500/10 group-hover:scale-110 transition-transform"><i class="fa-solid fa-screwdriver-wrench text-7xl"></i></div>
+                                <span class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 z-10">Total Servis Selesai</span>
+                                <span class="text-amber-400 text-2xl font-black z-10" id="report-total-services">0</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+                            <h3 class="text-sm font-bold text-slate-300 mb-4">Grafik Pengeluaran Bulanan</h3>
+                            <div class="h-64 w-full">
+                                <canvas id="report-chart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -780,6 +863,7 @@
                                         </select>
                                     </th>
                                     <th class="p-2 md:p-4 text-center whitespace-nowrap">Stok</th>
+                                    <th class="p-2 md:p-4 text-center whitespace-nowrap">QR</th>
                                     <th class="p-2 md:p-4 text-center whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
@@ -945,6 +1029,11 @@
                 class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
                 <i class="fa-solid fa-screwdriver-wrench text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
                 <span class="text-[9px] font-bold">Servis</span>
+            </button>
+            <button onclick="switchMobileTab('report')" id="nav-report"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-amber-400 transition-colors">
+                <i class="fa-solid fa-chart-line text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
+                <span class="text-[9px] font-bold">Report</span>
             </button>
             <button onclick="switchMobileTab('borrow')" id="nav-borrow"
                 class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
@@ -1343,9 +1432,10 @@
     <div id="barcode-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl max-w-md w-full text-center shadow-2xl scale-95 transition-transform duration-300" id="barcode-modal-content">
             <h3 class="text-white font-bold text-lg mb-1" id="barcode-item-name">Nama Barang</h3>
-            <p class="text-slate-400 text-xs mb-4">Barcode Internal ZDI</p>
-            <div class="bg-white p-4 rounded-2xl mx-auto flex justify-center mb-5 overflow-hidden w-full">
+            <p class="text-slate-400 text-xs mb-4">Barcode & QR Code Internal ZDI</p>
+            <div class="bg-white p-4 rounded-2xl mx-auto flex flex-col items-center justify-center mb-5 w-full gap-4">
                 <svg id="barcode-svg" class="max-w-full h-auto"></svg>
+                <div id="qrcode-container"></div>
             </div>
             <div class="flex gap-3">
                 <button onclick="closeBarcodeModal()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-colors">Tutup</button>
@@ -1445,6 +1535,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <script src="js/modules/01-api.js?v=1783931562"></script>
@@ -1467,6 +1558,7 @@
     <script src="js/modules/18-borrowing.js?v=1783931562"></script>
     <script src="js/modules/19-item-history.js?v=1783931562"></script>
     <script src="js/modules/20-barcode-printing.js?v=1783931562"></script>
+    <script src="js/modules/21-report.js?v=1783931562"></script>
 </body>
 
 </html>

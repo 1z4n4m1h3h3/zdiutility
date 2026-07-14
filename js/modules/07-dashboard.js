@@ -107,6 +107,11 @@ function createGeneralRow(item) {
                 ${item.qty}
             </span>
         </td>
+        <td class="p-2 md:p-4 text-center whitespace-nowrap">
+            <button onclick="viewBarcode('${item.id}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-purple-950/40 hover:bg-purple-600 text-purple-400 hover:text-white flex items-center justify-center cursor-pointer border border-purple-900/30 transition-colors shadow-sm mx-auto" title="View QR/Barcode">
+                <i class="fa-solid fa-qrcode text-[10px] md:text-xs"></i>
+            </button>
+        </td>
         <td class="p-2 md:p-4 whitespace-nowrap">
             ${getActionsHtml(item)}
         </td>
@@ -140,6 +145,11 @@ function createPrinterRow(item) {
             <span class="inline-block px-2 md:px-3 py-1 md:py-1.5 rounded-xl text-[11px] md:text-xs font-black tracking-wider ${qtyStyle} border min-w-[45px] md:min-w-[55px] shadow-sm">
                 ${item.qty}
             </span>
+        </td>
+        <td class="p-2 md:p-4 text-center whitespace-nowrap">
+            <button onclick="viewBarcode('${item.id}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-purple-950/40 hover:bg-purple-600 text-purple-400 hover:text-white flex items-center justify-center cursor-pointer border border-purple-900/30 transition-colors shadow-sm mx-auto" title="View QR/Barcode">
+                <i class="fa-solid fa-qrcode text-[10px] md:text-xs"></i>
+            </button>
         </td>
         <td class="p-2 md:p-4 whitespace-nowrap">
             ${getActionsHtml(item)}

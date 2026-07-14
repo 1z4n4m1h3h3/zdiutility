@@ -41,6 +41,22 @@ window.viewBarcode = function (id) {
         showToast('Library JsBarcode belum termuat.', 'warning');
     }
 
+    // Generate QR Code
+    const qrContainer = document.getElementById('qrcode-container');
+    if (qrContainer) {
+        qrContainer.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+                text: item.id,
+                width: 128,
+                height: 128,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    }
+
     modal.classList.remove('hidden');
     // Trigger animation
     setTimeout(() => {
@@ -132,28 +148,34 @@ window.openScanner = function (targetInputId) {
 
 function processScanResult(decodedText, targetInputId) {
     const scannedItem = inventory.find(i => i.id === decodedText);
+
+    if (targetInputId) {
+        const inputEl = document.getElementById(targetInputId);
+        if (inputEl) {
+            if (scannedItem) {
+                inputEl.value = scannedItem.id;
+            } else {
+                inputEl.value = decodedText;
+            }
+            inputEl.dispatchEvent(new Event('input'));
+            inputEl.dispatchEvent(new Event('change'));
+            showToast('Barcode berhasil di-scan.', 'info', 4000);
+        }
+        return;
+    }
+
     if (scannedItem) {
         if (window.scannerMode === 'IN') {
             changeQty(scannedItem.id, 1);
-            // changeQty already fires a toast
         } else {
             if (scannedItem.qty > 0) {
                 changeQty(scannedItem.id, -1);
-                // changeQty already fires a toast
             } else {
                 showToast(`Gagal! Stok ${scannedItem.name} kosong!`, 'error', 4000);
             }
         }
     } else {
-        const inputEl = document.getElementById(targetInputId);
-        if (inputEl) {
-            inputEl.value = decodedText;
-            // Also trigger oninput to make sure the table filters if it's the search box
-            inputEl.dispatchEvent(new Event('input'));
-            showToast('Barcode berhasil di-scan.', 'info', 4000);
-        } else {
-            showToast('Barcode tidak terdaftar dalam sistem.', 'warning', 4000);
-        }
+        showToast('Barcode tidak terdaftar dalam sistem.', 'warning', 4000);
     }
 }
 

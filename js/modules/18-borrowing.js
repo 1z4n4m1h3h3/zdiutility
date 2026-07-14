@@ -21,7 +21,16 @@ window.renderBorrowingsTable = function () {
     const emptyState = document.getElementById('borrowings-empty-state');
     if (!tableBody || !emptyState) return;
 
-    if (borrowingsList.length === 0) {
+    const filterName = document.getElementById('filter-borrow-name')?.value.toLowerCase() || '';
+    const filterDate = document.getElementById('filter-borrow-date')?.value || '';
+
+    const filteredBorrowings = borrowingsList.filter(b => {
+        const matchesName = !filterName || (b.borrower && b.borrower.toLowerCase().includes(filterName));
+        const matchesDate = !filterDate || b.dateBorrowed === filterDate;
+        return matchesName && matchesDate;
+    });
+
+    if (filteredBorrowings.length === 0) {
         tableBody.innerHTML = '';
         emptyState.classList.remove('hidden');
         return;
@@ -30,7 +39,7 @@ window.renderBorrowingsTable = function () {
     emptyState.classList.add('hidden');
     tableBody.innerHTML = '';
 
-    borrowingsList.forEach(b => {
+    filteredBorrowings.forEach(b => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/20 transition-colors';
         tr.innerHTML = `
@@ -38,6 +47,9 @@ window.renderBorrowingsTable = function () {
             <td class="p-4 text-slate-300 whitespace-nowrap"><i class="fa-solid fa-user-tag text-xs text-slate-500 mr-1.5"></i>${b.borrower}</td>
             <td class="p-4 text-slate-300 whitespace-nowrap">${b.dateBorrowed}</td>
             <td class="p-4 font-bold text-slate-400 whitespace-nowrap">${b.dateReturn || '-'}</td>
+            <td class="p-4 whitespace-nowrap">
+                ${b.attachment ? `<a href="${API_URL}${b.attachment}" target="_blank" class="text-cyan-400 hover:text-cyan-300 text-[10px] uppercase font-bold flex items-center gap-1"><i class="fa-solid fa-image"></i> Lihat</a>` : '-'}
+            </td>
             <td class="p-4 text-right">
                 <button onclick="finishBorrow('${b.id}')" class="btn-action-3d h-8 px-4 rounded-xl bg-indigo-950/40 hover:bg-indigo-600 text-indigo-400 hover:text-white flex items-center justify-center cursor-pointer border border-indigo-900/30 transition-colors text-xs font-bold shadow-sm ml-auto">
                     Kembalikan
@@ -90,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const borrower = document.getElementById('borrow-name').value.trim();
             const dateBorrowed = document.getElementById('borrow-date').value;
             const dateReturn = document.getElementById('borrow-return-date').value;
+            const attachmentFile = document.getElementById('borrow-attachment').files[0];
 
             if (!itemId) {
                 showToast('Pilih barang yang mau dipinjam!', 'warning');
@@ -106,6 +119,24 @@ document.addEventListener('DOMContentLoaded', () => {
             item.qty -= 1;
             await saveToStore('inventory', item);
 
+            // Handle file upload
+            let attachmentUrl = null;
+            if (attachmentFile) {
+                const formData = new FormData();
+                formData.append('attachment', attachmentFile);
+                try {
+                    const res = await fetch(`${API_URL}/api/upload`, {
+                        method: 'POST',
+                        headers: { ...getAuthHeaders() },
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.success) attachmentUrl = data.url;
+                } catch (e) {
+                    console.error('File upload failed:', e);
+                }
+            }
+
             const newBorrowing = {
                 id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
                 itemId: item.id,
@@ -113,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 borrower: borrower,
                 dateBorrowed: dateBorrowed,
                 dateReturn: dateReturn,
+                attachment: attachmentUrl,
+                reminderSent: 0,
                 createdAt: Date.now()
             };
 
