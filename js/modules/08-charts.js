@@ -112,18 +112,33 @@ function updateChart() {
             chart.options.plugins.tooltip.enabled = false;
             chart.options.plugins.legend.display = false;
         } else {
-            let sortedData = [...catData].sort((a, b) => b.qty - a.qty);
-            let displayData = sortedData;
+            const groupedMap = {};
+            catData.forEach(item => {
+                const name = item.name.trim();
+                if (groupedMap[name]) {
+                    groupedMap[name] += item.qty;
+                } else {
+                    groupedMap[name] = item.qty;
+                }
+            });
 
-            if (sortedData.length > 5) {
-                displayData = sortedData.slice(0, 5);
-                const othersQty = sortedData.slice(5).reduce((sum, item) => sum + item.qty, 0);
+            let groupedData = Object.keys(groupedMap).map(key => ({
+                name: key,
+                qty: groupedMap[key]
+            }));
+
+            groupedData.sort((a, b) => b.qty - a.qty);
+            let displayData = groupedData;
+
+            if (groupedData.length > 5) {
+                displayData = groupedData.slice(0, 5);
+                const othersQty = groupedData.slice(5).reduce((sum, item) => sum + item.qty, 0);
                 if (othersQty > 0) {
                     displayData.push({ name: 'Lainnya', qty: othersQty, isOther: true });
                 }
             }
 
-            chart.data.labels = displayData.map(i => i.name.length > 15 ? i.name.substring(0, 15) + '...' : i.name);
+            chart.data.labels = displayData.map(i => i.name.length > 30 ? i.name.substring(0, 30) + '...' : i.name);
             chart.data.datasets[0].data = displayData.map(i => i.qty);
             chart.data.datasets[0].backgroundColor = displayData.map((item, idx) => {
                 if (item.isOther) return 'rgba(71, 85, 105, 0.8)';
