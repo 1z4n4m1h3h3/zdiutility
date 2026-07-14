@@ -9,7 +9,6 @@ const host = window.location.hostname || defaultHost;
 // Jika user testing di Live Server (port 5500) atau GitHub Pages, arahkan ke backend lokal
 const isGithub = window.location.hostname.includes('github.io');
 const currentHost = window.location.hostname;
-const defaultHost = "10.62.38.204"; // Fallback IP
 
 let API_URL = "";
 
