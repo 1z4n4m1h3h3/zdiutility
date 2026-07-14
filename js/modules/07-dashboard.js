@@ -78,6 +78,9 @@ function getActionsHtml(item) {
                 <i class="fa-solid fa-plus text-[10px] md:text-xs"></i>
             </button>
             <div class="w-[1px] h-3 md:h-4 bg-slate-800 mx-0.5"></div>
+            <button onclick="editItem('${item.id}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-amber-950/40 hover:bg-amber-600 text-amber-400 hover:text-white flex items-center justify-center cursor-pointer border border-amber-900/30 transition-colors shadow-sm" title="Edit Item">
+                <i class="fa-solid fa-pen text-[10px] md:text-xs"></i>
+            </button>
             <button onclick="deleteItem('${item.id}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-rose-950/40 hover:bg-rose-600 text-rose-400 hover:text-white flex items-center justify-center cursor-pointer border border-rose-900/30 transition-colors">
                 <i class="fa-solid fa-trash-can text-[10px] md:text-xs"></i>
             </button>
@@ -238,7 +241,7 @@ function renderTable() {
                 <span class="px-2.5 py-1 bg-slate-800/80 text-slate-300 text-[11px] font-medium rounded border border-slate-700 shadow-sm">Total Unit: <strong class="text-white ml-1">${total}</strong></span>
                 <span class="px-2.5 py-1 bg-blue-900/30 text-blue-300 text-[11px] font-medium rounded border border-blue-800/50 shadow-sm">MSTEK: <strong class="text-white ml-1">${mstekCount}</strong></span>
                 <span class="px-2.5 py-1 bg-rose-900/30 text-rose-300 text-[11px] font-medium rounded border border-rose-800/50 shadow-sm">INKNARA: <strong class="text-white ml-1">${inknaraCount}</strong></span>
-                <span class="px-2.5 py-1 bg-emerald-900/30 text-emerald-300 text-[11px] font-medium rounded border border-emerald-800/50 shadow-sm">KOINK / KONICA: <strong class="text-white ml-1">${konicaCount}</strong></span>
+                <span class="px-2.5 py-1 bg-emerald-900/30 text-emerald-300 text-[11px] font-medium rounded border border-emerald-800/50 shadow-sm">KOINK: <strong class="text-white ml-1">${konicaCount}</strong></span>
                 ${otherCount > 0 ? `<span class="px-2.5 py-1 bg-slate-800/40 text-slate-400 text-[11px] font-medium rounded border border-slate-700/50 shadow-sm">Lainnya: <strong class="text-white ml-1">${otherCount}</strong></span>` : ''}
             `;
         }

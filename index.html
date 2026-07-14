@@ -838,6 +838,19 @@
                             <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> Log Aktivitas Real-Time
                         </h2>
                         <div class="flex items-center gap-3">
+                            <input type="text" id="search-log" placeholder="Cari log (user, objek, dll)..." class="hidden md:block w-48 bg-slate-900/50 border border-slate-700/50 rounded-lg px-3 py-1.5 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors">
+                            <select id="filter-log-action" class="bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 focus:outline-none focus:border-cyan-500/50 transition-colors cursor-pointer">
+                                <option value="ALL">Semua Aktivitas</option>
+                                <option value="ADD_ITEM">Nambah Barang</option>
+                                <option value="EDIT_ITEM">Ngubah Data</option>
+                                <option value="EDIT_QUANTITY">Ngubah Stok</option>
+                                <option value="DELETE_ITEM">Buang Barang</option>
+                                <option value="MAINTENANCE_OUT">Kirim Servis</option>
+                                <option value="MAINTENANCE_IN">Selesai Servis</option>
+                                <option value="LOGIN">Masuk Sistem</option>
+                                <option value="LOGOUT">Cabut Sistem</option>
+                                <option value="CLEAR_LOG">Bersihin Jejak</option>
+                            </select>
                             <button id="btn-clear-logs" onclick="openModal('modal-clear-logs')" class="btn-action-3d h-8 px-3 rounded-lg bg-rose-950/40 hover:bg-rose-600 text-rose-400 hover:text-white flex items-center justify-center cursor-pointer border border-rose-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm hidden">
                                 <i class="fa-solid fa-trash-can mr-1.5"></i> Clear Logs
                             </button>
@@ -1228,7 +1241,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div id="qr-reader" class="w-full bg-black rounded-xl overflow-hidden border border-slate-700/50"></div>
+                <div id="qr-reader" class="w-full bg-black rounded-xl overflow-hidden border border-slate-700/50"></div>
         </div>
     </div>
 
@@ -1236,6 +1249,61 @@
     <div id="toast" class="fixed bottom-24 lg:bottom-10 right-5 transform translate-y-32 opacity-0 transition-all duration-500 flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-bold shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50 pointer-events-none backdrop-blur-md">
         <i id="toast-icon" class="text-lg"></i>
         <span id="toast-message"></span>
+    </div>
+
+    <!-- EDIT ITEM MODAL -->
+    <div id="edit-item-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="glass-3d w-full max-w-md p-6 rounded-3xl border border-slate-800/60 shadow-2xl relative transform scale-95 transition-transform duration-300" id="edit-item-modal-content">
+            <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-rose-500/20 p-2 rounded-xl transition-all cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h2 class="text-xl font-bold mb-5 text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-pen-to-square text-amber-400"></i> Edit Item
+            </h2>
+            <form id="edit-stock-form" class="space-y-4">
+                <input type="hidden" id="edit-item-id">
+                <input type="hidden" id="edit-item-category">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Nama Barang / Item</label>
+                    <input type="text" id="edit-item-name" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Qty (Stok)</label>
+                        <input type="number" id="edit-item-qty" required min="0" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Kondisi</label>
+                        <select id="edit-item-condition" required class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner cursor-pointer">
+                            <option value="Normal" class="bg-slate-950 text-emerald-400">✅ Normal</option>
+                            <option value="Rusak" class="bg-slate-950 text-rose-400">❌ Rusak</option>
+                            <option value="Baru" class="bg-slate-950 text-emerald-400">✅ Baru</option>
+                            <option value="Bekas" class="bg-slate-950 text-amber-400">♻️ Bekas</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Tambahan Khusus Printer -->
+                <div id="edit-printer-extra-fields" class="hidden space-y-4 pt-2 border-t border-slate-800/50 mt-2">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Nama Vendor</label>
+                        <input type="text" id="edit-item-vendor" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">IP Address</label>
+                            <input type="text" id="edit-item-ip" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Area</label>
+                            <input type="text" id="edit-item-department" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-3d w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Barcode Viewer Modal -->

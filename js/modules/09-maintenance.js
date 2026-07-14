@@ -403,3 +403,92 @@ if (form) {
     });
 }
 
+
+window.editItem = function(id) {
+    const item = inventory.find(i => i.id === id);
+    if (!item) {
+        showToast('Item tidak ditemukan', 'error');
+        return;
+    }
+
+    document.getElementById('edit-item-id').value = item.id;
+    document.getElementById('edit-item-category').value = item.category;
+    document.getElementById('edit-item-name').value = item.name;
+    document.getElementById('edit-item-qty').value = item.qty;
+    
+    const condSelect = document.getElementById('edit-item-condition');
+    if (condSelect) condSelect.value = item.condition || 'Normal';
+
+    const printerExtra = document.getElementById('edit-printer-extra-fields');
+    if (item.category === 'Printer') {
+        printerExtra.classList.remove('hidden');
+        document.getElementById('edit-item-vendor').value = item.vendor || '';
+        document.getElementById('edit-item-ip').value = item.ip || '';
+        document.getElementById('edit-item-department').value = item.department || '';
+    } else {
+        printerExtra.classList.add('hidden');
+    }
+
+    const modal = document.getElementById('edit-item-modal');
+    const modalContent = document.getElementById('edit-item-modal-content');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+    }, 10);
+};
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('edit-item-modal');
+    const modalContent = document.getElementById('edit-item-modal-content');
+    modal.classList.add('opacity-0');
+    modalContent.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+const editForm = document.getElementById('edit-stock-form');
+if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-item-id').value;
+        const index = inventory.findIndex(i => i.id === id);
+        
+        if (index !== -1) {
+            const oldItem = { ...inventory[index] };
+            
+            inventory[index].name = document.getElementById('edit-item-name').value.trim();
+            inventory[index].qty = Math.max(0, parseInt(document.getElementById('edit-item-qty').value));
+            const condSelect = document.getElementById('edit-item-condition');
+            if (condSelect) inventory[index].condition = condSelect.value;
+            
+            if (inventory[index].category === 'Printer') {
+                inventory[index].vendor = document.getElementById('edit-item-vendor').value.trim();
+                inventory[index].ip = document.getElementById('edit-item-ip').value.trim();
+                inventory[index].department = document.getElementById('edit-item-department').value.trim();
+            }
+            
+            saveToStore('inventory', inventory[index]).catch(console.error);
+            
+            let changes = [];
+            if (oldItem.name !== inventory[index].name) changes.push(`Nama: ${oldItem.name} → ${inventory[index].name}`);
+            if (oldItem.qty !== inventory[index].qty) changes.push(`Qty: ${oldItem.qty} → ${inventory[index].qty}`);
+            if (oldItem.condition !== inventory[index].condition) changes.push(`Kondisi: ${oldItem.condition || 'Normal'} → ${inventory[index].condition}`);
+            
+            if (changes.length > 0) {
+                addToActivityLog('EDIT_ITEM', inventory[index].name, `Data diperbarui: ${changes.join(', ')}`);
+                showToast('Perubahan berhasil disimpan! ✓', 'success');
+            } else {
+                showToast('Tidak ada perubahan', 'info');
+            }
+            
+            closeEditModal();
+            updateDashboard();
+            if (typeof renderSvcItemDropdown === 'function') renderSvcItemDropdown();
+            if (typeof renderBorrowItemDropdown === 'function') renderBorrowItemDropdown();
+            if (typeof forceSyncData === 'function') forceSyncData();
+        }
+    });
+}
+

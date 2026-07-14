@@ -58,10 +58,31 @@ function updateActivityLog() {
         return;
     }
 
+    const searchInput = document.getElementById('search-log');
+    const filterInput = document.getElementById('filter-log-action');
+    
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const filterAction = filterInput ? filterInput.value : 'ALL';
+
+    const filteredLogs = activityLog.filter(log => {
+        const matchesAction = filterAction === 'ALL' || log.action === filterAction;
+        const matchesSearch = searchTerm === '' || 
+            (log.user && log.user.toLowerCase().includes(searchTerm)) ||
+            (log.itemName && log.itemName.toLowerCase().includes(searchTerm)) ||
+            (log.details && log.details.toLowerCase().includes(searchTerm));
+        return matchesAction && matchesSearch;
+    });
+
+    if (filteredLogs.length === 0) {
+        logBody.innerHTML = '';
+        document.getElementById('empty-log-state').classList.remove('hidden');
+        return;
+    }
+
     document.getElementById('empty-log-state').classList.add('hidden');
     logBody.innerHTML = '';
 
-    activityLog.forEach(log => {
+    filteredLogs.forEach(log => {
         const tr = document.createElement('tr');
         tr.className = 'row-animate hover:bg-slate-800/20 text-sm';
 
@@ -123,5 +144,15 @@ function updateActivityLog() {
         `;
         logBody.appendChild(tr);
     });
+}
+
+const searchLogInput = document.getElementById('search-log');
+if (searchLogInput) {
+    searchLogInput.addEventListener('input', updateActivityLog);
+}
+
+const filterLogAction = document.getElementById('filter-log-action');
+if (filterLogAction) {
+    filterLogAction.addEventListener('change', updateActivityLog);
 }
 
