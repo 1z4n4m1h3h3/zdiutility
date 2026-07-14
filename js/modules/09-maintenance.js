@@ -57,14 +57,23 @@ function renderServicesTable() {
         servicesTableBody.appendChild(tr);
     });
 
-    if (maintenanceList.length > 0) {
-        const trTotal = document.createElement('tr');
-        trTotal.className = 'bg-slate-900/80 text-sm border-t-2 border-slate-700/50';
-        trTotal.innerHTML = `
-            <td class="p-4 pl-4 font-black text-white whitespace-nowrap uppercase tracking-wider" colspan="2">TOTAL (${maintenanceList.length} ITEM)</td>
-            <td class="p-4 font-black text-emerald-400 text-xs tracking-wider" colspan="3">Rp ${totalBiaya.toLocaleString('id-ID')}</td>
-        `;
-        servicesTableBody.appendChild(trTotal);
+    // Update Summary Badges
+    const summaryDiv = document.getElementById('service-summary');
+    if (summaryDiv) {
+        if (maintenanceList.length > 0) {
+            summaryDiv.innerHTML = `
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Servis:</span>
+                    <span class="text-xs font-black text-white">${maintenanceList.length}</span>
+                </div>
+                <div class="px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/50 flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider">Total Biaya:</span>
+                    <span class="text-xs font-black text-emerald-400">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
+                </div>
+            `;
+        } else {
+            summaryDiv.innerHTML = '';
+        }
     }
 }
 

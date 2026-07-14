@@ -46,13 +46,19 @@ window.renderBorrowingsTable = function () {
         tableBody.appendChild(tr);
     });
 
-    if (borrowingsList.length > 0) {
-        const trTotal = document.createElement('tr');
-        trTotal.className = 'bg-slate-900/80 text-sm border-t-2 border-slate-700/50';
-        trTotal.innerHTML = `
-            <td class="p-4 font-black text-white whitespace-nowrap uppercase tracking-wider" colspan="4">TOTAL (${borrowingsList.length} ITEM) DIPINJAM</td>
-        `;
-        tableBody.appendChild(trTotal);
+    // Update Summary Badges
+    const summaryDiv = document.getElementById('borrow-summary');
+    if (summaryDiv) {
+        if (borrowingsList.length > 0) {
+            summaryDiv.innerHTML = `
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Dipinjam:</span>
+                    <span class="text-xs font-black text-white">${borrowingsList.length} Barang</span>
+                </div>
+            `;
+        } else {
+            summaryDiv.innerHTML = '';
+        }
     }
 }
 
