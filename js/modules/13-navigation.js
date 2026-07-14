@@ -48,6 +48,7 @@ window.switchMobileTab = function (tabName) {
         else if (tabName === 'logs') pageTitleEl.textContent = 'Log Aktivitas';
         else if (tabName === 'maintenance') pageTitleEl.textContent = 'Maintenance & Servis';
         else if (tabName === 'borrow') pageTitleEl.textContent = 'Peminjaman Aset';
+        else if (tabName === 'printer') pageTitleEl.textContent = 'Manajemen Printer';
     }
 
     // Toggle Total Items topbar widget
@@ -68,7 +69,8 @@ window.switchMobileTab = function (tabName) {
         add: ['add-item-panel', 'admin-auth-panel'],
         logs: ['chart-panel', 'logs-panel'],
         maintenance: ['maintenance-panel'],
-        borrow: ['borrow-panel']
+        borrow: ['borrow-panel'],
+        printer: ['printer-panel']
     };
 
     // Hide all panels, completely! (Remove lg:flex and lg:block since they override hidden on desktop)

@@ -286,6 +286,12 @@
                     </div>
                     <span>Peminjaman Aset</span>
                 </button>
+                <button onclick="switchMobileTab('printer')" id="side-nav-printer" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-print"></i>
+                    </div>
+                    <span>Aset Printer</span>
+                </button>
                 <button onclick="installPWA()" id="side-nav-install" class="sidebar-nav-btn w-full hidden items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all text-left group shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-white group-hover:scale-110 transition-all">
                         <i class="fa-solid fa-download"></i>
@@ -713,9 +719,32 @@
                         </table>
                     </div>
 
-                    <div id="printer-table-container" class="max-h-[520px] overflow-y-auto overflow-x-auto custom-scroll mt-4 border-t border-slate-800 pt-4 hidden">
-                        <h3 class="text-sm font-bold text-teal-400 mb-3 px-4 md:px-6"><i class="fa-solid fa-print"></i> Aset Khusus Printer</h3>
-                        <div id="printer-summary" class="flex flex-wrap gap-2 px-4 md:px-6 mb-3"></div>
+                    <div id="empty-state" class="p-16 text-center hidden">
+                        <div class="text-slate-700 text-6xl mb-4"><i class="fa-solid fa-inbox"></i></div>
+                        <p class="text-slate-400 text-sm font-medium">Tidak ada item dalam kategori ini.</p>
+                    </div>
+                </div>
+
+                <!-- PANEL PRINTER -->
+                <div id="printer-panel" class="hidden flex-col h-full w-full glass-3d rounded-3xl overflow-hidden border border-slate-800/60" style="animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;">
+                    <div class="p-4 md:p-6 border-b border-slate-800/80 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-gradient-to-r from-slate-950/50 to-slate-950/20">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
+                            <h2 class="text-base font-bold text-white flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-print text-teal-400"></i> Aset Khusus Printer
+                            </h2>
+                            <div class="relative w-full sm:w-64 group">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                    <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                                </span>
+                                <input type="text" id="search-printer" placeholder="Cari Printer..." 
+                                    oninput="renderTable()"
+                                    class="w-full bg-slate-900/60 border border-slate-800/80 rounded-xl pl-8 pr-9 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:bg-slate-900 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)]">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="printer-summary" class="flex flex-wrap gap-2 px-4 md:px-6 mb-3 mt-4"></div>
+                    <div class="max-h-[520px] overflow-y-auto overflow-x-auto custom-scroll border-t border-slate-800">
                         <table class="w-full text-left border-collapse sticky-header min-w-[700px]">
                             <thead>
                                 <tr class="border-b border-slate-800 text-slate-400 text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
@@ -746,11 +775,6 @@
                         <div id="printer-empty-state" class="p-10 text-center hidden">
                             <p class="text-slate-500 text-sm">Belum ada data printer.</p>
                         </div>
-                    </div>
-
-                    <div id="empty-state" class="p-16 text-center hidden">
-                        <div class="text-slate-700 text-6xl mb-4"><i class="fa-solid fa-inbox"></i></div>
-                        <p class="text-slate-400 text-sm font-medium">Tidak ada item dalam kategori ini.</p>
                     </div>
                 </div>
 
