@@ -2,7 +2,7 @@
 // VENDOR MANAGEMENT SYSTEM
 // ============================================================
 
-let vendorsList = [];
+// vendorsList is declared in 01-api.js
 
 // Inject Modal HTML for Vendor
 const vendorModalHTML = `

@@ -2,38 +2,38 @@
 // EXCEL IMPORT & EXPORT SYSTEM
 // ============================================================
 window.downloadExcelTemplate = function() {
-    // Sheet 1: Aset Umum
-    const wsUmumData = [
-        ["PANDUAN PENGISIAN ASET UMUM:"],
-        ["- Kategori wajib diisi salah satu dari: PC, Laptop, Monitor, CCTV, Doorlock, Consumable"],
-        ["- Stok wajib berupa angka."],
-        ["- Kondisi bisa diisi: Normal, Rusak, Sedang Servis, dsb."],
-        [],
-        ["Nama Barang", "Kategori", "Stok", "Kondisi"],
-        ["Contoh Laptop ROG", "Laptop", 10, "Normal"],
-        ["Contoh Kabel LAN", "Consumable", 50, "Baru"],
-        ["Monitor Samsung 24", "Monitor", 5, "Normal"]
+    // Sheet 1: Data Aset (Clean table starting from row 1)
+    const wsData = [
+        ["Nama Barang", "Kategori", "Stok", "Kondisi", "Vendor", "Area", "IP Address"],
+        ["Laptop ROG", "Laptop", 10, "Normal", "PT. Asus", "IT Dept", ""],
+        ["Kabel LAN", "Consumable", 50, "Baru", "Toko Komputer", "Gudang", ""],
+        ["Monitor Samsung 24", "Monitor", 5, "Normal", "PT. Samsung", "Operation", ""],
+        ["Epson L3110", "Printer", 2, "Baru", "PT. Epson", "HRD", "USB"],
+        ["Konica Minolta", "Printer", 1, "Normal", "PT. Konica", "Finance", "192.168.1.100"]
     ];
-    const wsUmum = XLSX.utils.aoa_to_sheet(wsUmumData);
-    wsUmum['!cols'] = [{wch: 30}, {wch: 15}, {wch: 10}, {wch: 15}];
+    const wsAset = XLSX.utils.aoa_to_sheet(wsData);
     
-    // Sheet 2: Printer Spesifik
-    const wsPrinterData = [
-        ["PANDUAN PENGISIAN PRINTER:"],
-        ["- NAMA PRINTER wajib diisi."],
-        ["- VENDOR, IP PRINTER, dan DEPARTEMENT bersifat opsional tapi sangat disarankan."],
-        [],
-        ["NAMA PRINTER", "VENDOR", "IP PRINTER", "DEPARTEMENT"],
-        ["HP LaserJet Pro M404n", "MSTEK", "192.168.1.100", "HRD"],
-        ["Epson L3110", "INKNARA", "USB", "Finance"],
-        ["Konica Minolta Bizhub", "KOINK", "192.168.1.105", "Operation"]
+    // Add bold header style if supported (basic styling)
+    wsAset['!cols'] = [{wch: 30}, {wch: 15}, {wch: 10}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 15}];
+    
+    // Sheet 2: Panduan (Instructions)
+    const wsPanduanData = [
+        ["PANDUAN PENGISIAN DATA ASET:"],
+        [""],
+        ["1. Nama Barang", "Wajib diisi dengan nama aset/barang."],
+        ["2. Kategori", "Wajib diisi salah satu dari: PC, Laptop, Monitor, Printer, CCTV, Doorlock, Consumable."],
+        ["3. Stok", "Wajib diisi dengan angka (contoh: 10)."],
+        ["4. Kondisi", "Opsional. Default: Normal. (Pilihan: Normal, Rusak, Baru, Bekas)"],
+        ["5. Vendor", "Opsional. Nama vendor atau supplier barang."],
+        ["6. Area", "Opsional. Lokasi atau departemen tempat barang berada."],
+        ["7. IP Address", "Opsional. Khusus untuk Printer atau PC/CCTV yang memiliki IP."]
     ];
-    const wsPrinter = XLSX.utils.aoa_to_sheet(wsPrinterData);
-    wsPrinter['!cols'] = [{wch: 30}, {wch: 15}, {wch: 15}, {wch: 20}];
+    const wsPanduan = XLSX.utils.aoa_to_sheet(wsPanduanData);
+    wsPanduan['!cols'] = [{wch: 15}, {wch: 80}];
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsUmum, "Format_Aset_Umum");
-    XLSX.utils.book_append_sheet(wb, wsPrinter, "Format_Printer");
+    XLSX.utils.book_append_sheet(wb, wsAset, "Data_Aset");
+    XLSX.utils.book_append_sheet(wb, wsPanduan, "Panduan");
     XLSX.writeFile(wb, "Template_Import_Assets.xlsx");
 }
 
@@ -48,12 +48,20 @@ if (excelFileInput) {
             try {
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Cari sheet yang namanya mirip Data_Aset atau Sheet1
+                let targetSheetName = workbook.SheetNames[0];
+                for(const name of workbook.SheetNames) {
+                    if(name.toLowerCase().includes('data') || name.toLowerCase().includes('aset')) {
+                        targetSheetName = name;
+                        break;
+                    }
+                }
+                const worksheet = workbook.Sheets[targetSheetName];
                 const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 let headerRowIndex = 0;
                 
-                // Cari baris yang mengandung header NAMA PRINTER atau Nama Barang
+                // Cari baris header
                 for (let i = 0; i < Math.min(10, rawData.length); i++) {
                     const row = rawData[i] || [];
                     const isHeader = row.some(c => typeof c === 'string' && (c.trim().toUpperCase() === 'NAMA PRINTER' || c.trim().toUpperCase() === 'NAMA BARANG'));
@@ -66,7 +74,7 @@ if (excelFileInput) {
                 // Parse json mulai dari baris header tersebut
                 const rawJsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex });
                 
-                // Bersihkan (trim) nama kolom untuk menghindari error karena spasi di excel
+                // Bersihkan nama kolom
                 const jsonData = rawJsonData.map(row => {
                     const newRow = {};
                     for (const key in row) {
@@ -82,8 +90,8 @@ if (excelFileInput) {
 
                 let importedCount = 0;
                 for (const row of jsonData) {
+                    // Fallback untuk format lama (NAMA PRINTER)
                     if (row['NAMA PRINTER']) {
-                        // Format Spesifik Printer
                         const newItem = {
                             id: generateBarcodeId('Printer'),
                             name: row['NAMA PRINTER'].toString().trim(),
@@ -110,16 +118,24 @@ if (excelFileInput) {
                             await saveToStore('inventory', newItem);
                         }
                         importedCount++;
-                    } else if (row['Nama Barang'] && row['Kategori'] && row['Stok'] !== undefined) {
-                        // Format Umum Asset
-                        const cat = row['Kategori'];
-                        if (['PC', 'Laptop', 'Monitor', 'Printer', 'CCTV', 'Doorlock', 'Consumable'].includes(cat)) {
+                    } 
+                    // Format standar gabungan
+                    else if (row['Nama Barang'] && row['Kategori'] && row['Stok'] !== undefined) {
+                        const cat = row['Kategori'].toString().trim();
+                        // Validasi kategori secara case-insensitive
+                        const validCategories = ['PC', 'Laptop', 'Monitor', 'Printer', 'CCTV', 'Doorlock', 'Consumable'];
+                        const matchedCat = validCategories.find(c => c.toLowerCase() === cat.toLowerCase());
+                        
+                        if (matchedCat) {
                             const newItem = {
-                                id: generateBarcodeId(cat),
+                                id: generateBarcodeId(matchedCat),
                                 name: row['Nama Barang'].toString().trim(),
-                                category: cat,
+                                category: matchedCat,
                                 qty: Math.max(0, parseInt(row['Stok']) || 0),
-                                condition: row['Kondisi'] || 'Normal'
+                                condition: row['Kondisi'] ? row['Kondisi'].toString().trim() : 'Normal',
+                                vendor: row['Vendor'] ? row['Vendor'].toString().trim() : '',
+                                department: (row['Area'] || row['Departemen'] || row['Department']) ? (row['Area'] || row['Departemen'] || row['Department']).toString().trim() : '',
+                                ip: (row['IP Address'] || row['IP']) ? (row['IP Address'] || row['IP']).toString().trim() : ''
                             };
 
                             const existingIndex = inventory.findIndex(item => {

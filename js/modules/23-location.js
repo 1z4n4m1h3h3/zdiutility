@@ -2,7 +2,7 @@
 // LOCATION MANAGEMENT SYSTEM
 // ============================================================
 
-let locationsList = [];
+// locationsList is declared in 01-api.js
 
 const locationModalHTML = `
 <div id="modal-location" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
