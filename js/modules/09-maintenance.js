@@ -54,19 +54,27 @@ function renderServicesTable() {
         totalBiaya += parseInt(svc.estCost) || 0;
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/20 text-sm transition-colors';
+        
+        const isCompleted = svc.status === 'completed';
+        const actionBtn = isCompleted 
+            ? `<button disabled class="h-8 px-4 rounded-lg bg-slate-800 text-emerald-500/50 flex items-center justify-center border border-slate-700/50 text-[10px] font-bold uppercase tracking-wider ml-auto cursor-not-allowed">
+                <i class="fa-solid fa-check-double mr-1.5"></i> Selesai
+               </button>`
+            : `<button onclick="finishService('${svc.id}')" class="btn-action-3d h-8 px-4 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm ml-auto">
+                <i class="fa-solid fa-check mr-1.5"></i> Selesai
+               </button>`;
+
         tr.innerHTML = `
             <td class="p-4 pl-4 font-bold text-orange-400 whitespace-nowrap">${svc.itemName}</td>
             <td class="p-4 text-slate-300 flex items-center gap-2"><i class="fa-solid fa-location-dot text-slate-500"></i> ${svc.location}</td>
             <td class="p-4 text-slate-400 text-xs tracking-wider">Rp ${parseInt(svc.estCost).toLocaleString('id-ID')}</td>
             <td class="p-4 font-bold text-slate-400">${svc.sendDate || '-'}</td>
-            <td class="p-4 font-bold text-amber-400">${svc.completionDate}</td>
+            <td class="p-4 font-bold ${isCompleted ? 'text-emerald-400' : 'text-amber-400'}">${svc.completionDate || '-'}</td>
             <td class="p-4 whitespace-nowrap">
                 ${svc.attachment ? `<a href="${API_URL}${svc.attachment}" target="_blank" class="text-cyan-400 hover:text-cyan-300 text-[10px] uppercase font-bold flex items-center gap-1"><i class="fa-solid fa-image"></i> Lihat</a>` : '-'}
             </td>
             <td class="p-4 text-right">
-                <button onclick="finishService('${svc.id}')" class="btn-action-3d h-8 px-4 rounded-lg bg-emerald-950/40 hover:bg-emerald-600 text-emerald-400 hover:text-white flex items-center justify-center cursor-pointer border border-emerald-900/30 transition-colors text-[10px] font-bold uppercase tracking-wider shadow-sm ml-auto">
-                    <i class="fa-solid fa-check mr-1.5"></i> Selesai
-                </button>
+                ${actionBtn}
             </td>
         `;
         servicesTableBody.appendChild(tr);
@@ -75,15 +83,16 @@ function renderServicesTable() {
     // Update Summary Badges
     const summaryDiv = document.getElementById('service-summary');
     if (summaryDiv) {
-        if (maintenanceList.length > 0) {
-            const itemNames = maintenanceList.map(s => s.itemName).join(', ');
+        const activeServices = maintenanceList.filter(s => s.status !== 'completed');
+        if (activeServices.length > 0) {
+            const itemNames = activeServices.map(s => s.itemName).join(', ');
             summaryDiv.innerHTML = `
                 <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700/50 flex items-center gap-2 max-w-2xl">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Total Servis:</span>
-                    <span class="text-xs font-black text-white truncate" title="${itemNames}">${maintenanceList.length} Unit (${itemNames})</span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Total Servis Aktif:</span>
+                    <span class="text-xs font-black text-white truncate" title="${itemNames}">${activeServices.length} Unit (${itemNames})</span>
                 </div>
                 <div class="px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/50 flex items-center gap-2">
-                    <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider whitespace-nowrap">Total Biaya:</span>
+                    <span class="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider whitespace-nowrap">Total Biaya (Filter):</span>
                     <span class="text-xs font-black text-emerald-400 whitespace-nowrap">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
                 </div>
             `;
@@ -171,6 +180,7 @@ window.finishService = async function (id) {
     if (svcIndex === -1) return;
 
     const svc = maintenanceList[svcIndex];
+    if (svc.status === 'completed') return;
 
     // Kembalikan stok 1 unit
     const invItem = inventory.find(i => i.id === svc.itemId);
@@ -182,8 +192,12 @@ window.finishService = async function (id) {
         addToActivityLog('MAINTENANCE_IN', svc.itemName, `Servis selesai dari ${svc.location}`);
     }
 
-    maintenanceList.splice(svcIndex, 1);
-    await deleteFromStore('services', id);
+    // UPDATE STATUS instead of deleting
+    svc.status = 'completed';
+    const now = new Date();
+    svc.completionDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    await saveToStore('services', svc);
 
     renderServicesTable();
     if (typeof renderReport === 'function') renderReport();
