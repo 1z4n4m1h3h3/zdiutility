@@ -155,7 +155,7 @@ function deleteVendor(id) {
 }
 
 function updateVendorDropdown() {
-    const selects = [document.getElementById('item-vendor'), document.getElementById('edit-item-vendor')];
+    const selects = [document.getElementById('item-vendor'), document.getElementById('edit-item-vendor'), document.getElementById('svc-location')];
     selects.forEach(select => {
         if (!select) return;
         if(select.tagName === 'SELECT') {

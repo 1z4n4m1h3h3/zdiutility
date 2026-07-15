@@ -122,6 +122,7 @@ function initDB() {
         db.run(`ALTER TABLE borrowings ADD COLUMN dateReturn TEXT`, () => {});
         db.run(`ALTER TABLE borrowings ADD COLUMN reminderSent INTEGER DEFAULT 0`, () => {});
         db.run(`ALTER TABLE borrowings ADD COLUMN attachment TEXT`, () => {});
+        db.run(`ALTER TABLE borrowings ADD COLUMN location TEXT`, () => {});
         
         db.run(`ALTER TABLE services ADD COLUMN sendDate TEXT`, () => {});
         db.run(`ALTER TABLE services ADD COLUMN reminderSent INTEGER DEFAULT 0`, () => {});

@@ -145,12 +145,12 @@ function deleteLocation(id) {
 }
 
 function updateLocationDropdown() {
-    const selects = [document.getElementById('item-department'), document.getElementById('edit-item-department')];
+    const selects = [document.getElementById('item-department'), document.getElementById('edit-item-department'), document.getElementById('borrow-location')];
     selects.forEach(select => {
         if (!select) return;
         if(select.tagName === 'SELECT') {
             const currentVal = select.value;
-            select.innerHTML = '<option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Lokasi Gudang / Area</option>';
+            select.innerHTML = '<option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Lokasi / Area (Opsional)</option>';
             locationsList.forEach(l => {
                 select.innerHTML += `<option value="${l.name}" class="bg-slate-950 text-white">${l.name}</option>`;
             });

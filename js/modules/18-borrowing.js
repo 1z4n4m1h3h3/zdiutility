@@ -44,7 +44,7 @@ window.renderBorrowingsTable = function () {
         tr.className = 'hover:bg-slate-800/20 transition-colors';
         tr.innerHTML = `
             <td class="p-4 font-semibold text-white whitespace-nowrap">${b.itemName}</td>
-            <td class="p-4 text-slate-300 whitespace-nowrap"><i class="fa-solid fa-user-tag text-xs text-slate-500 mr-1.5"></i>${b.borrower}</td>
+            <td class="p-4 text-slate-300 whitespace-nowrap"><i class="fa-solid fa-user-tag text-xs text-slate-500 mr-1.5"></i>${b.borrower} <span class="ml-2 text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">${b.location || '-'}</span></td>
             <td class="p-4 text-slate-300 whitespace-nowrap">${b.dateBorrowed}</td>
             <td class="p-4 font-bold text-slate-400 whitespace-nowrap">${b.dateReturn || '-'}</td>
             <td class="p-4 whitespace-nowrap">
@@ -99,19 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
         borrowForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const itemId = document.getElementById('borrow-item').value;
-            const borrower = document.getElementById('borrow-name').value.trim();
+            const borrowerName = document.getElementById('borrow-name').value;
+            const borrowerLocation = document.getElementById('borrow-location').value;
             const dateBorrowed = document.getElementById('borrow-date').value;
             const dateReturn = document.getElementById('borrow-return-date').value;
-            const attachmentFile = document.getElementById('borrow-attachment').files[0];
-
-            if (!itemId) {
-                showToast('Pilih barang yang mau dipinjam!', 'warning');
+            const fileInput = document.getElementById('borrow-attachment');
+            const attachmentFile = fileInput.files[0];
+            
+            const itemIndex = inventory.findIndex(i => i.id === itemId);
+            if (itemIndex === -1) {
+                showToast('Barang tidak ditemukan!', 'error', 'fa-triangle-exclamation');
                 return;
             }
 
-            const item = inventory.find(i => i.id === itemId);
-            if (!item || item.qty <= 0) {
-                showToast('Barang tidak tersedia atau stok habis.', 'error');
+            const item = inventory[itemIndex];
+            if (item.qty <= 0) {
+                showToast('Stok barang habis!', 'error', 'fa-triangle-exclamation');
                 return;
             }
 
@@ -141,7 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
                 itemId: item.id,
                 itemName: item.name,
-                borrower: borrower,
+                borrower: borrowerName,
+                location: borrowerLocation,
                 dateBorrowed: dateBorrowed,
                 dateReturn: dateReturn,
                 attachment: attachmentUrl,
@@ -152,10 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
             borrowingsList.push(newBorrowing);
             await saveToStore('borrowings', newBorrowing);
 
-            addToActivityLog('EDIT_QUANTITY', item.name, `Aset dipinjam oleh ${borrower}. Stok -1`);
+            addToActivityLog('EDIT_QUANTITY', item.name, `Aset dipinjam oleh ${borrowerName} (${borrowerLocation}). Stok -1`);
 
             if (window.sendTelegramNotification) {
-                window.sendTelegramNotification(`🤝 *INFO PEMINJAMAN*\n\nBarang: *${item.name}*\nPeminjam: *${borrower}*\nTanggal: ${dateBorrowed}\n\nStok gudang sisa: ${item.qty}`);
+                window.sendTelegramNotification(`🤝 *INFO PEMINJAMAN*\n\nBarang: *${item.name}*\nPeminjam: *${borrowerName}*\nLokasi: *${borrowerLocation}*\nTanggal: ${dateBorrowed}\n\nStok gudang sisa: ${item.qty}`);
             }
 
             borrowForm.reset();
