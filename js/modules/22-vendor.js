@@ -2,6 +2,8 @@
 // VENDOR MANAGEMENT SYSTEM
 // ============================================================
 
+let vendorsList = [];
+
 // Inject Modal HTML for Vendor
 const vendorModalHTML = `
 <div id="modal-vendor" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">

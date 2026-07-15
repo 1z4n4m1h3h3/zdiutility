@@ -2,6 +2,8 @@
 // LOCATION MANAGEMENT SYSTEM
 // ============================================================
 
+let locationsList = [];
+
 const locationModalHTML = `
 <div id="modal-location" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
     <div class="glass-3d w-full max-w-md p-6 rounded-3xl text-left space-y-6 scale-95 transition-transform duration-300" id="modal-location-content">
