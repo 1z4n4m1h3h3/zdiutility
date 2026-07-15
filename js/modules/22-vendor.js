@@ -142,16 +142,16 @@ async function renderVendorList() {
 }
 
 function deleteVendor(id) {
-    showCustomConfirm(
-        'Hapus Vendor',
-        'Yakin mau hapus vendor ini? Data nggak bisa dikembalikan.',
-        'fa-triangle-exclamation',
-        async () => {
+    showCustomConfirm({
+        title: 'Hapus Vendor',
+        message: 'Yakin mau hapus vendor ini? Data nggak bisa dikembalikan.',
+        type: 'danger',
+        onConfirm: async () => {
             await deleteFromStore('vendors', id);
             showToast('Vendor dihapus', 'error', 'fa-trash');
             await refreshData(false);
         }
-    );
+    });
 }
 
 function updateVendorDropdown() {

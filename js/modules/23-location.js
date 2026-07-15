@@ -132,16 +132,16 @@ async function renderLocationList() {
 }
 
 function deleteLocation(id) {
-    showCustomConfirm(
-        'Hapus Lokasi',
-        'Yakin mau hapus lokasi ini? Data nggak bisa dikembalikan.',
-        'fa-triangle-exclamation',
-        async () => {
+    showCustomConfirm({
+        title: 'Hapus Lokasi',
+        message: 'Yakin mau hapus lokasi ini? Data nggak bisa dikembalikan.',
+        type: 'danger',
+        onConfirm: async () => {
             await deleteFromStore('locations', id);
             showToast('Lokasi dihapus', 'error', 'fa-trash');
             await refreshData(false);
         }
-    );
+    });
 }
 
 function updateLocationDropdown() {
