@@ -128,6 +128,47 @@ function initDB() {
         db.run(`ALTER TABLE services ADD COLUMN attachment TEXT`, () => {});
         db.run(`ALTER TABLE services ADD COLUMN status TEXT DEFAULT 'in_progress'`, () => {});
 
+        db.run(`CREATE TABLE IF NOT EXISTS vendors (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            contact TEXT,
+            address TEXT,
+            createdAt INTEGER
+        )`);
+
+        db.run(`CREATE TABLE IF NOT EXISTS locations (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            description TEXT,
+            createdAt INTEGER
+        )`);
+
+        // Migrate unique vendors from inventory
+        db.all("SELECT DISTINCT vendor FROM inventory WHERE vendor IS NOT NULL AND vendor != ''", [], (err, rows) => {
+            if (rows) {
+                rows.forEach(row => {
+                    db.get("SELECT id FROM vendors WHERE name = ?", [row.vendor], (err, vRow) => {
+                        if (!vRow) {
+                            db.run("INSERT INTO vendors (id, name, createdAt) VALUES (?, ?, ?)", [Date.now().toString() + Math.random().toString(36).substring(2, 5), row.vendor, Date.now()]);
+                        }
+                    });
+                });
+            }
+        });
+
+        // Migrate unique locations from inventory (department)
+        db.all("SELECT DISTINCT department FROM inventory WHERE department IS NOT NULL AND department != ''", [], (err, rows) => {
+            if (rows) {
+                rows.forEach(row => {
+                    db.get("SELECT id FROM locations WHERE name = ?", [row.department], (err, lRow) => {
+                        if (!lRow) {
+                            db.run("INSERT INTO locations (id, name, createdAt) VALUES (?, ?, ?)", [Date.now().toString() + Math.random().toString(36).substring(2, 5), row.department, Date.now()]);
+                        }
+                    });
+                });
+            }
+        });
+
         // Migrate data from db.json if database is empty
         db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
             if (row && row.count === 0 && fs.existsSync('./db.json')) {
@@ -199,7 +240,7 @@ function initDB() {
     });
 }
 
-const tables = ['users', 'inventory', 'activity_log', 'auth_codes', 'services', 'borrowings'];
+const tables = ['users', 'inventory', 'activity_log', 'auth_codes', 'services', 'borrowings', 'vendors', 'locations'];
 
 // Middleware untuk proteksi JWT
 function authenticateToken(req, res, next) {

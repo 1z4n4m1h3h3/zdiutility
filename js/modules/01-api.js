@@ -60,6 +60,8 @@ async function saveToStore(storeName, item) {
         else if (storeName === 'auth_codes') { queryKey = 'code'; queryValue = item.code; }
         else if (storeName === 'services') { queryKey = 'id'; queryValue = item.id; }
         else if (storeName === 'borrowings') { queryKey = 'id'; queryValue = item.id; }
+        else if (storeName === 'vendors') { queryKey = 'id'; queryValue = item.id; }
+        else if (storeName === 'locations') { queryKey = 'id'; queryValue = item.id; }
 
         const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${queryValue}&_t=${Date.now()}`, { cache: 'no-store', headers: getAuthHeaders() });
         const searchData = await searchRes.json();
@@ -103,6 +105,8 @@ async function deleteFromStore(storeName, key) {
         else if (storeName === 'auth_codes') queryKey = 'code';
         else if (storeName === 'services') queryKey = 'id';
         else if (storeName === 'borrowings') queryKey = 'id';
+        else if (storeName === 'vendors') queryKey = 'id';
+        else if (storeName === 'locations') queryKey = 'id';
 
         const searchRes = await fetch(`${API_URL}/${storeName}?${queryKey}=${key}&_t=${Date.now()}`, { cache: 'no-store', headers: getAuthHeaders() });
         const searchData = await searchRes.json();
@@ -138,5 +142,7 @@ let userList = [];
 let authCodes = [];
 let maintenanceList = [];
 let borrowingsList = [];
+let vendorsList = [];
+let locationsList = [];
 let stockChartInstance = null;
 let isSyncing = false;

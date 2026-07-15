@@ -50,6 +50,8 @@ window.switchMobileTab = function (tabName) {
         else if (tabName === 'borrow') pageTitleEl.textContent = 'Peminjaman Aset';
         else if (tabName === 'printer') pageTitleEl.textContent = 'Manajemen Printer';
         else if (tabName === 'report') pageTitleEl.textContent = 'Laporan Keuangan';
+        else if (tabName === 'vendor') pageTitleEl.textContent = 'Data Vendor';
+        else if (tabName === 'location') pageTitleEl.textContent = 'Lokasi Gudang / Rak';
     }
 
     // Toggle Total Items topbar widget
@@ -72,7 +74,9 @@ window.switchMobileTab = function (tabName) {
         maintenance: ['maintenance-panel'],
         borrow: ['borrow-panel'],
         printer: ['printer-panel'],
-        report: ['report-panel']
+        report: ['report-panel'],
+        vendor: ['vendor-panel'],
+        location: ['location-panel']
     };
 
     // Hide all panels, completely! (Remove lg:flex and lg:block since they override hidden on desktop)

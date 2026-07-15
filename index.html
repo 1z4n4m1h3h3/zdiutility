@@ -298,6 +298,18 @@
                     </div>
                     <span>Laporan Keuangan</span>
                 </button>
+                <button onclick="switchMobileTab('vendor')" id="side-nav-vendor" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-handshake-angle"></i>
+                    </div>
+                    <span>Data Vendor</span>
+                </button>
+                <button onclick="switchMobileTab('location')" id="side-nav-location" class="sidebar-nav-btn w-full flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition-all text-left group">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:scale-110 transition-all">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <span>Lokasi Gudang</span>
+                </button>
                 <button onclick="installPWA()" id="side-nav-install" class="sidebar-nav-btn w-full hidden items-center gap-3 p-3.5 rounded-2xl text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all text-left group shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-white group-hover:scale-110 transition-all">
                         <i class="fa-solid fa-download"></i>
@@ -317,6 +329,9 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <button onclick="toggleTheme()" class="btn-action-3d flex-1 h-10 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 hover:bg-amber-900/30 border border-slate-700/60 transition-all" title="Ganti Tema">
+                        <i class="fa-solid fa-palette text-xs"></i>
+                    </button>
                     <button onclick="openChangePasswordModal()" class="btn-action-3d flex-1 h-10 rounded-xl bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-cyan-900/30 border border-slate-700/60 transition-all" title="Ganti Password">
                         <i class="fa-solid fa-key text-xs"></i>
                     </button>
@@ -345,6 +360,9 @@
                             Admin
                         </h3>
                     </div>
+                    <button onclick="toggleTheme()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 hover:bg-slate-700 border border-slate-700/60 transition-all flex items-center justify-center" title="Ganti Tema">
+                        <i class="fa-solid fa-palette text-xs"></i>
+                    </button>
                     <button onclick="openChangePasswordModal()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-300 hover:text-cyan-400 hover:bg-slate-700 border border-slate-700/60 transition-all flex items-center justify-center" title="Ganti Password">
                         <i class="fa-solid fa-key text-xs"></i>
                     </button>
@@ -481,8 +499,9 @@
                         <div id="printer-extra-fields" class="hidden space-y-4 pt-2 border-t border-slate-800/50 mt-2">
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Nama Vendor (Opsional)</label>
-                                <input type="text" id="item-vendor" placeholder="Contoh: INKNARA"
-                                    class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                                <select id="item-vendor" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                    <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Vendor (Opsional)</option>
+                                </select>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -492,8 +511,9 @@
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Area (Opsional)</label>
-                                    <input type="text" id="item-department" placeholder="Contoh: SEWING"
-                                        class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
+                                    <select id="item-department" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] cursor-pointer">
+                                        <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Lokasi Gudang / Area</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -1003,6 +1023,67 @@
                         <p class="text-slate-400 text-sm font-medium">Belum ada aktivitas tercatat.</p>
                     </div>
                 </div>
+                <!-- PANEL MANAJEMEN VENDOR -->
+                <div id="vendor-panel"
+                    class="glass-3d p-6 rounded-3xl border border-slate-800/60 hover:border-cyan-500/30 transition-colors hidden"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both;">
+                    <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-handshake-angle text-cyan-400"></i> Manajemen Vendor
+                        </h2>
+                        <button onclick="openVendorModal()" class="btn-3d px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Tambah Vendor
+                        </button>
+                    </div>
+                    <div class="max-h-[350px] overflow-y-auto overflow-x-auto custom-scroll">
+                        <table class="w-full text-left border-collapse sticky-header min-w-[500px]">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                    <th class="p-3 md:p-5 pl-4 md:pl-6">Nama Vendor</th>
+                                    <th class="p-3 md:p-5">Kontak</th>
+                                    <th class="p-3 md:p-5">Alamat</th>
+                                    <th class="p-3 md:p-5 text-right pr-4 md:pr-6">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendor-list-body" class="divide-y divide-slate-800/40 text-sm">
+                            </tbody>
+                        </table>
+                        <div id="vendor-empty-state" class="p-10 text-center hidden">
+                            <p class="text-slate-500 text-sm">Belum ada vendor terdaftar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL MANAJEMEN LOKASI -->
+                <div id="location-panel"
+                    class="glass-3d p-6 rounded-3xl border border-slate-800/60 hover:border-cyan-500/30 transition-colors hidden"
+                    style="animation: slideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both;">
+                    <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
+                        <h2 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-cyan-400"></i> Lokasi Gudang / Rak
+                        </h2>
+                        <button onclick="openLocationModal()" class="btn-3d px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Tambah Lokasi
+                        </button>
+                    </div>
+                    <div class="max-h-[350px] overflow-y-auto overflow-x-auto custom-scroll">
+                        <table class="w-full text-left border-collapse sticky-header min-w-[500px]">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-[11px] font-bold uppercase tracking-wider bg-slate-950/50">
+                                    <th class="p-3 md:p-5 pl-4 md:pl-6">Nama Lokasi</th>
+                                    <th class="p-3 md:p-5">Deskripsi</th>
+                                    <th class="p-3 md:p-5 text-right pr-4 md:pr-6">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="location-list-body" class="divide-y divide-slate-800/40 text-sm">
+                            </tbody>
+                        </table>
+                        <div id="location-empty-state" class="p-10 text-center hidden">
+                            <p class="text-slate-500 text-sm">Belum ada lokasi terdaftar.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         <!-- BOTTOM NAVIGATION SPACER FOR MOBILE -->
@@ -1039,6 +1120,16 @@
                 class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
                 <i class="fa-solid fa-handshake text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
                 <span class="text-[9px] font-bold">Pinjam</span>
+            </button>
+            <button onclick="switchMobileTab('vendor')" id="nav-vendor"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-handshake-angle text-lg mb-1"></i>
+                <span class="text-[9px] font-bold">Vendor</span>
+            </button>
+            <button onclick="switchMobileTab('location')" id="nav-location"
+                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
+                <i class="fa-solid fa-map-location-dot text-lg mb-1"></i>
+                <span class="text-[9px] font-bold">Lokasi</span>
             </button>
             <button onclick="installPWA()" id="nav-install"
                 class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1.5 sm:px-3 rounded-xl transition-all duration-300 text-emerald-500 hover:text-emerald-300 relative">
@@ -1408,7 +1499,9 @@
                 <div id="edit-printer-extra-fields" class="hidden space-y-4 pt-2 border-t border-slate-800/50 mt-2">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Nama Vendor</label>
-                        <input type="text" id="edit-item-vendor" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                        <select id="edit-item-vendor" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner cursor-pointer">
+                            <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Vendor (Opsional)</option>
+                        </select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -1417,7 +1510,9 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wider text-teal-400 mb-2">Area</label>
-                            <input type="text" id="edit-item-department" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner">
+                            <select id="edit-item-department" class="w-full bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-inner cursor-pointer">
+                                <option value="" disabled selected class="bg-slate-950 text-slate-500">Pilih Lokasi Gudang / Area</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -1559,6 +1654,9 @@
     <script src="js/modules/19-item-history.js?v=1783931562"></script>
     <script src="js/modules/20-barcode-printing.js?v=1783931562"></script>
     <script src="js/modules/21-report.js?v=1783931562"></script>
+    <script src="js/modules/22-vendor.js?v=1"></script>
+    <script src="js/modules/23-location.js?v=1"></script>
+    <script src="js/modules/24-theme.js?v=1"></script>
 </body>
 
 </html>
