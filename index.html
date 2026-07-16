@@ -1122,75 +1122,81 @@
         <!-- FAB NAVIGATION FOR MOBILE (POP UP LINGKARAN) -->
         <div class="lg:hidden">
             <!-- Overlay -->
-            <div id="mobile-nav-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleMobileNav()"></div>
+            <div id="mobile-nav-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden opacity-0 transition-opacity duration-500" onclick="toggleMobileNav()"></div>
 
             <!-- The Circular FAB Button -->
-            <button onclick="toggleMobileNav()" id="mobile-fab" class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-transform duration-300">
-                <i id="mobile-fab-icon" class="fa-solid fa-compass transition-transform duration-300"></i>
-            </button>
+            <div class="fixed bottom-6 right-6 z-50 flex items-center justify-center">
+                <!-- Pulse effect behind the button -->
+                <span id="fab-pulse" class="absolute h-full w-full rounded-full bg-cyan-400 opacity-60 animate-ping hidden"></span>
+                <button onclick="toggleMobileNav()" id="mobile-fab" class="relative z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white flex items-center justify-center text-[1.4rem] shadow-[0_0_25px_rgba(34,211,238,0.5)] border border-cyan-400/30 transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    <i id="mobile-fab-icon" class="fa-solid fa-compass transition-transform duration-500 rotate-0"></i>
+                </button>
+            </div>
 
             <!-- The Pop-up Menu Container (Circular/Rounded) -->
-            <div id="mobile-nav-menu" class="fixed bottom-24 right-6 w-[300px] z-50 glass-3d rounded-[2rem] border border-slate-800/80 p-5 backdrop-blur-xl bg-slate-950/90 shadow-2xl transition-all duration-300 transform scale-90 opacity-0 pointer-events-none origin-bottom-right">
+            <div id="mobile-nav-menu" class="fixed bottom-24 right-6 w-[310px] z-50 glass-3d rounded-[2.5rem] border border-slate-700/50 p-6 backdrop-blur-2xl bg-slate-900/80 shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_30px_rgba(34,211,238,0.1)] transition-all duration-500 transform scale-90 opacity-0 pointer-events-none origin-bottom-right">
                 
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 text-center border-b border-slate-800 pb-2">Menu Navigasi</h3>
+                <h3 class="text-[10px] font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 uppercase tracking-[0.2em] mb-5 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt text-amber-400"></i> Quick Actions <i class="fa-solid fa-bolt text-amber-400"></i>
+                </h3>
                 
-                <div class="grid grid-cols-3 gap-y-5 gap-x-2">
+                <div class="grid grid-cols-3 gap-y-6 gap-x-3">
                     <!-- Dashboard -->
-                    <button onclick="switchMobileTab('monitor'); toggleMobileNav()" id="nav-monitor" class="mobile-nav-btn active flex flex-col items-center justify-center gap-2 text-cyan-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-chart-simple"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Utility</span>
+                    <button onclick="switchMobileTab('monitor'); toggleMobileNav()" id="nav-monitor" class="mobile-nav-btn active flex flex-col items-center justify-center gap-2.5 text-cyan-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-chart-simple"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Utility</span>
                     </button>
 
                     <!-- Add -->
-                    <button onclick="switchMobileTab('add'); toggleMobileNav()" id="nav-add" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-circle-plus"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Nambah</span>
+                    <button onclick="switchMobileTab('add'); toggleMobileNav()" id="nav-add" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-circle-plus"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Nambah</span>
                     </button>
 
                     <!-- Logs -->
-                    <button onclick="switchMobileTab('logs'); toggleMobileNav()" id="nav-logs" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Logs</span>
+                    <button onclick="switchMobileTab('logs'); toggleMobileNav()" id="nav-logs" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Logs</span>
                     </button>
 
                     <!-- Servis -->
-                    <button onclick="switchMobileTab('maintenance'); toggleMobileNav()" id="nav-maintenance" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Servis</span>
+                    <button onclick="switchMobileTab('maintenance'); toggleMobileNav()" id="nav-maintenance" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Servis</span>
                     </button>
 
                     <!-- Report -->
-                    <button onclick="switchMobileTab('report'); toggleMobileNav()" id="nav-report" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-chart-line"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Report</span>
+                    <button onclick="switchMobileTab('report'); toggleMobileNav()" id="nav-report" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-chart-line"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Report</span>
                     </button>
 
                     <!-- Pinjam -->
-                    <button onclick="switchMobileTab('borrow'); toggleMobileNav()" id="nav-borrow" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-handshake"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Pinjam</span>
+                    <button onclick="switchMobileTab('borrow'); toggleMobileNav()" id="nav-borrow" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-handshake"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Pinjam</span>
                     </button>
 
                     <!-- Vendor -->
-                    <button onclick="switchMobileTab('vendor'); toggleMobileNav()" id="nav-vendor" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-handshake-angle"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Vendor</span>
+                    <button onclick="switchMobileTab('vendor'); toggleMobileNav()" id="nav-vendor" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-handshake-angle"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Vendor</span>
                     </button>
 
                     <!-- Lokasi -->
-                    <button onclick="switchMobileTab('location'); toggleMobileNav()" id="nav-location" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
-                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-map-location-dot"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Lokasi</span>
+                    <button onclick="switchMobileTab('location'); toggleMobileNav()" id="nav-location" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-slate-400 transition-all group hover:-translate-y-1">
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-gradient-to-br group-[.active]:from-cyan-500/30 group-[.active]:to-blue-600/30 group-[.active]:border-cyan-400/50 group-[.active]:text-cyan-300 group-[.active]:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-300"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80 group-[.active]:opacity-100">Lokasi</span>
                     </button>
 
                     <!-- Install -->
-                    <button onclick="installPWA(); toggleMobileNav()" id="nav-install" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-emerald-500 transition-colors group relative hidden">
-                        <span class="absolute top-0 right-3 flex h-2.5 w-2.5">
+                    <button onclick="installPWA(); toggleMobileNav()" id="nav-install" class="mobile-nav-btn flex flex-col items-center justify-center gap-2.5 text-emerald-500 transition-all group relative hidden hover:-translate-y-1">
+                        <span class="absolute top-0 right-3 flex h-3 w-3">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
                         </span>
-                        <div class="w-12 h-12 rounded-full bg-emerald-900/20 border border-emerald-700/50 flex items-center justify-center text-lg shadow-inner"><i class="fa-solid fa-download animate-bounce"></i></div>
-                        <span class="text-[9px] font-bold uppercase tracking-wider">Install</span>
+                        <div class="w-[3.25rem] h-[3.25rem] rounded-full bg-emerald-900/30 border border-emerald-500/40 flex items-center justify-center text-lg shadow-[inset_0_0_15px_rgba(16,185,129,0.2)]"><i class="fa-solid fa-download animate-bounce"></i></div>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest opacity-80">Install</span>
                     </button>
 
                 </div>
@@ -1201,28 +1207,31 @@
                 const menu = document.getElementById('mobile-nav-menu');
                 const overlay = document.getElementById('mobile-nav-overlay');
                 const icon = document.getElementById('mobile-fab-icon');
+                const pulse = document.getElementById('fab-pulse');
                 const isHidden = menu.classList.contains('opacity-0');
                 
                 if (isHidden) {
+                    // Buka Menu
                     menu.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
                     menu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
                     
                     overlay.classList.remove('hidden');
                     setTimeout(() => overlay.classList.remove('opacity-0'), 10);
                     
-                    icon.classList.remove('fa-compass');
-                    icon.classList.add('fa-xmark');
-                    icon.style.transform = 'rotate(180deg)';
+                    icon.classList.remove('fa-compass', 'rotate-0');
+                    icon.classList.add('fa-xmark', 'rotate-180');
+                    pulse.classList.remove('hidden');
                 } else {
+                    // Tutup Menu
                     menu.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
                     menu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
                     
                     overlay.classList.add('opacity-0');
-                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                    setTimeout(() => overlay.classList.add('hidden'), 500);
                     
-                    icon.classList.add('fa-compass');
-                    icon.classList.remove('fa-xmark');
-                    icon.style.transform = 'rotate(0deg)';
+                    icon.classList.add('fa-compass', 'rotate-0');
+                    icon.classList.remove('fa-xmark', 'rotate-180');
+                    pulse.classList.add('hidden');
                 }
             }
             </script>
