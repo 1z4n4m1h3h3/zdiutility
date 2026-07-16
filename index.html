@@ -1119,57 +1119,113 @@
         <!-- BOTTOM NAVIGATION SPACER FOR MOBILE -->
         <div class="h-24 lg:hidden"></div>
 
-        <!-- BOTTOM NAV BAR FOR MOBILE VIEW -->
-        <div
-            class="lg:hidden fixed bottom-4 left-4 right-4 z-40 glass-3d rounded-2xl border border-slate-800/80 p-2 flex items-center justify-around backdrop-blur-lg bg-slate-950/80 shadow-2xl">
-            <button onclick="switchMobileTab('monitor')" id="nav-monitor"
-                class="mobile-nav-btn active flex flex-col items-center justify-center py-1.5 px-1.5 sm:px-3 rounded-xl transition-all duration-300 text-cyan-400">
-                <i class="fa-solid fa-chart-simple text-lg"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Utility</span>
+        <!-- FAB NAVIGATION FOR MOBILE (POP UP LINGKARAN) -->
+        <div class="lg:hidden">
+            <!-- Overlay -->
+            <div id="mobile-nav-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleMobileNav()"></div>
+
+            <!-- The Circular FAB Button -->
+            <button onclick="toggleMobileNav()" id="mobile-fab" class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-transform duration-300">
+                <i id="mobile-fab-icon" class="fa-solid fa-compass transition-transform duration-300"></i>
             </button>
-            <button onclick="switchMobileTab('add')" id="nav-add"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1.5 sm:px-3 rounded-xl transition-all duration-300 text-slate-500 hover:text-slate-300">
-                <i class="fa-solid fa-circle-plus text-lg"></i>
-            </button>
-            <button onclick="switchMobileTab('logs')" id="nav-logs"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1.5 sm:px-3 rounded-xl transition-all duration-300 text-slate-500 hover:text-slate-300">
-                <i class="fa-solid fa-clock-rotate-left text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
-                <span class="text-[9px] font-bold">Logs</span>
-            </button>
-            <button onclick="switchMobileTab('maintenance')" id="nav-maintenance"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
-                <i class="fa-solid fa-screwdriver-wrench text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
-                <span class="text-[9px] font-bold">Servis</span>
-            </button>
-            <button onclick="switchMobileTab('report')" id="nav-report"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-amber-400 transition-colors">
-                <i class="fa-solid fa-chart-line text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
-                <span class="text-[9px] font-bold">Report</span>
-            </button>
-            <button onclick="switchMobileTab('borrow')" id="nav-borrow"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
-                <i class="fa-solid fa-handshake text-lg mb-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]"></i>
-                <span class="text-[9px] font-bold">Pinjam</span>
-            </button>
-            <button onclick="switchMobileTab('vendor')" id="nav-vendor"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
-                <i class="fa-solid fa-handshake-angle text-lg mb-1"></i>
-                <span class="text-[9px] font-bold">Vendor</span>
-            </button>
-            <button onclick="switchMobileTab('location')" id="nav-location"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-2 px-1.5 sm:px-3 text-slate-500 hover:text-cyan-400 transition-colors">
-                <i class="fa-solid fa-map-location-dot text-lg mb-1"></i>
-                <span class="text-[9px] font-bold">Lokasi</span>
-            </button>
-            <button onclick="installPWA()" id="nav-install"
-                class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1.5 sm:px-3 rounded-xl transition-all duration-300 text-emerald-500 hover:text-emerald-300 relative">
-                <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <i class="fa-solid fa-download text-lg animate-bounce"></i>
-                <span class="text-[9px] font-bold mt-1 uppercase tracking-wider">Install</span>
-            </button>
+
+            <!-- The Pop-up Menu Container (Circular/Rounded) -->
+            <div id="mobile-nav-menu" class="fixed bottom-24 right-6 w-[300px] z-50 glass-3d rounded-[2rem] border border-slate-800/80 p-5 backdrop-blur-xl bg-slate-950/90 shadow-2xl transition-all duration-300 transform scale-90 opacity-0 pointer-events-none origin-bottom-right">
+                
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 text-center border-b border-slate-800 pb-2">Menu Navigasi</h3>
+                
+                <div class="grid grid-cols-3 gap-y-5 gap-x-2">
+                    <!-- Dashboard -->
+                    <button onclick="switchMobileTab('monitor'); toggleMobileNav()" id="nav-monitor" class="mobile-nav-btn active flex flex-col items-center justify-center gap-2 text-cyan-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-chart-simple"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Utility</span>
+                    </button>
+
+                    <!-- Add -->
+                    <button onclick="switchMobileTab('add'); toggleMobileNav()" id="nav-add" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-circle-plus"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Nambah</span>
+                    </button>
+
+                    <!-- Logs -->
+                    <button onclick="switchMobileTab('logs'); toggleMobileNav()" id="nav-logs" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Logs</span>
+                    </button>
+
+                    <!-- Servis -->
+                    <button onclick="switchMobileTab('maintenance'); toggleMobileNav()" id="nav-maintenance" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Servis</span>
+                    </button>
+
+                    <!-- Report -->
+                    <button onclick="switchMobileTab('report'); toggleMobileNav()" id="nav-report" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-chart-line"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Report</span>
+                    </button>
+
+                    <!-- Pinjam -->
+                    <button onclick="switchMobileTab('borrow'); toggleMobileNav()" id="nav-borrow" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-handshake"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Pinjam</span>
+                    </button>
+
+                    <!-- Vendor -->
+                    <button onclick="switchMobileTab('vendor'); toggleMobileNav()" id="nav-vendor" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-handshake-angle"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Vendor</span>
+                    </button>
+
+                    <!-- Lokasi -->
+                    <button onclick="switchMobileTab('location'); toggleMobileNav()" id="nav-location" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-slate-400 transition-colors group">
+                        <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700/50 flex items-center justify-center text-lg shadow-inner group-[.active]:bg-cyan-500/20 group-[.active]:border-cyan-500/50 group-[.active]:text-cyan-400"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Lokasi</span>
+                    </button>
+
+                    <!-- Install -->
+                    <button onclick="installPWA(); toggleMobileNav()" id="nav-install" class="mobile-nav-btn flex flex-col items-center justify-center gap-2 text-emerald-500 transition-colors group relative hidden">
+                        <span class="absolute top-0 right-3 flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <div class="w-12 h-12 rounded-full bg-emerald-900/20 border border-emerald-700/50 flex items-center justify-center text-lg shadow-inner"><i class="fa-solid fa-download animate-bounce"></i></div>
+                        <span class="text-[9px] font-bold uppercase tracking-wider">Install</span>
+                    </button>
+
+                </div>
+            </div>
+            
+            <script>
+            function toggleMobileNav() {
+                const menu = document.getElementById('mobile-nav-menu');
+                const overlay = document.getElementById('mobile-nav-overlay');
+                const icon = document.getElementById('mobile-fab-icon');
+                const isHidden = menu.classList.contains('opacity-0');
+                
+                if (isHidden) {
+                    menu.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+                    menu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                    
+                    overlay.classList.remove('hidden');
+                    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                    
+                    icon.classList.remove('fa-compass');
+                    icon.classList.add('fa-xmark');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    menu.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+                    menu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                    
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                    
+                    icon.classList.add('fa-compass');
+                    icon.classList.remove('fa-xmark');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+            </script>
         </div>
         </main>
     </div>
