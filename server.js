@@ -144,6 +144,17 @@ function initDB() {
             createdAt INTEGER
         )`);
 
+        db.run(`CREATE TABLE IF NOT EXISTS printer_logs (
+            id TEXT PRIMARY KEY,
+            printerId TEXT,
+            printerName TEXT,
+            damageDate TEXT,
+            description TEXT,
+            reportedBy TEXT,
+            status TEXT,
+            createdAt INTEGER
+        )`);
+
         // Migrate unique vendors from inventory
         db.all("SELECT DISTINCT vendor FROM inventory WHERE vendor IS NOT NULL AND vendor != ''", [], (err, rows) => {
             if (rows) {
@@ -241,7 +252,7 @@ function initDB() {
     });
 }
 
-const tables = ['users', 'inventory', 'activity_log', 'auth_codes', 'services', 'borrowings', 'vendors', 'locations'];
+const tables = ['users', 'inventory', 'activity_log', 'auth_codes', 'services', 'borrowings', 'vendors', 'locations', 'printer_logs'];
 
 // Middleware untuk proteksi JWT
 function authenticateToken(req, res, next) {

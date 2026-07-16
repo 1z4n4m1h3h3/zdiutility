@@ -66,6 +66,15 @@ function getConditionBadge(item) {
 }
 
 function getActionsHtml(item) {
+    let printerAction = '';
+    if (item.category === 'Printer') {
+        printerAction = `
+            <button onclick="openPrinterDamageModal('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-orange-950/40 hover:bg-orange-600 text-orange-400 hover:text-white flex items-center justify-center cursor-pointer border border-orange-900/30 transition-colors shadow-sm" title="Catat Kerusakan">
+                <i class="fa-solid fa-triangle-exclamation text-[10px] md:text-xs"></i>
+            </button>
+        `;
+    }
+
     return `
         <div class="flex justify-center items-center gap-1.5 md:gap-2.5">
             <button onclick="changeQty('${item.id}', -1)" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer border border-slate-700/60">
@@ -78,6 +87,7 @@ function getActionsHtml(item) {
                 <i class="fa-solid fa-plus text-[10px] md:text-xs"></i>
             </button>
             <div class="w-[1px] h-3 md:h-4 bg-slate-800 mx-0.5"></div>
+            ${printerAction}
             <button onclick="editItem('${item.id}')" class="btn-action-3d w-7 h-7 md:w-8 md:h-8 rounded-lg bg-amber-950/40 hover:bg-amber-600 text-amber-400 hover:text-white flex items-center justify-center cursor-pointer border border-amber-900/30 transition-colors shadow-sm" title="Edit Item">
                 <i class="fa-solid fa-pen text-[10px] md:text-xs"></i>
             </button>
