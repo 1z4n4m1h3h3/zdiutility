@@ -33,18 +33,17 @@ function showCustomConfirm({ title, message, type, onConfirm }) {
     }
 
     // Tampilkan dengan animasi fade-in & scale-up
-    confirmModal.classList.remove('hidden');
-    setTimeout(() => {
-        confirmModal.classList.remove('opacity-0');
-        modalContent.classList.remove('scale-95');
-    }, 10);
+    confirmModal.classList.remove('hidden', 'modal-leave');
+    confirmModal.classList.add('modal-enter');
 }
 
 function closeCustomConfirm() {
-    confirmModal.classList.add('opacity-0');
-    modalContent.classList.add('scale-95');
+    confirmModal.classList.remove('modal-enter');
+    confirmModal.classList.add('modal-leave');
     setTimeout(() => {
-        confirmModal.classList.add('hidden');
+        if (confirmModal.classList.contains('modal-leave')) {
+            confirmModal.classList.add('hidden');
+        }
     }, 300);
 }
 
@@ -54,4 +53,3 @@ btnModalConfirm.addEventListener('click', () => {
     if (modalCallback) modalCallback();
     closeCustomConfirm();
 });
-

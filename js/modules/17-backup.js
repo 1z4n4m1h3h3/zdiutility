@@ -3,29 +3,22 @@
 // ============================================================
 window.openModal = function (id) {
     const modal = document.getElementById(id);
-    const content = document.getElementById(id + '-content');
     if (modal) {
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            if (content) {
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }
-        }, 10);
+        modal.classList.remove('hidden', 'modal-leave');
+        modal.classList.add('modal-enter');
     }
 }
 
 window.closeModal = function (id) {
     const modal = document.getElementById(id);
-    const content = document.getElementById(id + '-content');
     if (modal) {
-        modal.classList.add('opacity-0');
-        if (content) {
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-        }
-        setTimeout(() => modal.classList.add('hidden'), 300);
+        modal.classList.remove('modal-enter');
+        modal.classList.add('modal-leave');
+        setTimeout(() => {
+            if (modal.classList.contains('modal-leave')) {
+                modal.classList.add('hidden');
+            }
+        }, 300);
     }
 }
 

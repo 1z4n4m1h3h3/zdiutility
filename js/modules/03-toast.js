@@ -5,6 +5,8 @@ function showToast(message, type = 'info', duration = 5000) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    // Set duration for CSS animation
+    toast.style.setProperty('--toast-duration', `${duration}ms`);
 
     const iconMap = {
         success: 'fa-check-circle',
@@ -14,8 +16,11 @@ function showToast(message, type = 'info', duration = 5000) {
     };
 
     toast.innerHTML = `
-        <span class="toast-icon"><i class="fa-solid ${iconMap[type]}"></i></span>
-        <span>${message}</span>
+        <div class="flex items-center gap-3 relative z-10 w-full">
+            <span class="toast-icon"><i class="fa-solid ${iconMap[type]}"></i></span>
+            <span class="flex-1">${message}</span>
+        </div>
+        <div class="toast-progress"></div>
     `;
 
     container.appendChild(toast);
@@ -24,4 +29,3 @@ function showToast(message, type = 'info', duration = 5000) {
         toast.remove();
     }, duration);
 }
-
